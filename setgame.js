@@ -283,6 +283,7 @@ var SetGame = function( targetId ){
 			newGame();
 			onResize();
 		};
+		im.ondblclick = im.onclick;
 		document.body.appendChild( im );
 	};
 	
