@@ -1,4 +1,4 @@
-var cacheName = 'weatherPWA-step-6-1';
+var cacheName = 'setimagecache';
 var filesToCache = [
   'https://bingmike.github.io/set/',
   'https://bingmike.github.io/set/index.htm',
