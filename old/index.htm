@@ -1,0 +1,1364 @@
+<html>
+<head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.0/jquery-confirm.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.0/jquery-confirm.min.js"></script>
+<script>
+
+/***************************************************************
+What's new in v0.5
+Bug fixes
+
+What's new in v0.4
+Two player option enabled
+Displays last SET found
+Bug fixes
+	
+TODO
+
+Clicking 2 Player option should visually effect sort, and autodeal options
+	like disable and deselect sort and disable and select auto deal
+	unchecking 2 player should re-enable inputs but not check/uncheck them
+
+Let the users know how to buzz in. Maybe explain the game too. A help screen I guess.
+
+animate the collapse and sorts (same problem)
+	Make a detailed paper explanation of what needs to happen
+	You can make an alert or something that will pause the game right before collapse to assist in this
+	If you can describe it well on paper you can describe it well here
+	Then you can code it here
+
+beautify buttons (stylized)
+	Sideways open purple ovals I suppose since using red and green for switches
+	Oval background white with purple text for Help (Locate?) and Sort, whatever else
+	This could be done purely with css I suspect
+
+beautify options panel checkboxes as open ovals in red for off swoff.png and green for swon.png
+	I already made the art, kinda shitty,  can be improved later
+	Better read up on how other people have done this rather than reinvent the wheel.
+
+BUG: GAME DOESN'T SUPPORT A REPLYTIMER VALUE OF 0 BECAUSE OF SO MUCH HARD CODED BULLSHIT
+BUG: FINDLIMIT is limited to 0-9 OR IT BREAKS. Also I do nothing to ensure the value is 0-9
+
+Improvement: Learn more about jQuery User Interface library
+Improvement: Research how to develop a web page for mobile
+Improvement: Things would be so much cleaner if you had a sane array of playerscores, playernames
+Improvement: help button finders should not clear the user highlighting of selected cards. the code i made to fix that broke the display of finders, so i reverted.
+Improvement: Only preload images you are about to use, Preload images before you use them
+Improvement: raise the zindex of animated cards
+Improvement: Fix cards graphics. They are really wonky and unnecessarilly spacious.
+Improvement: Cards should be vector svg and scaled to best fit screen. 3 rows are always required. if the display aspect ratio is reasonable,
+	then the card widths will not be constrained, but their height, from which you can calculate width and positions
+	If the aspect ratio is very narrow (unthinkable, but think) then the cards are constrained by width of the screen
+	divided by number of cards per row at any given time.
+Improvement: The multiplayer code is hideous. Better to have playername = []; playerscore = []; playerwin = [];
+
+code cleanup: make it not embarassing. streamline the jQuery calls into single statements- much less overhead
+request for comments
+
+****************************************************************/
+var VERSION = "0.5a";
+
+var ALLOWHELP = getCookie("allowhelp"); if(ALLOWHELP=="")ALLOWHELP = false;
+var ALLOWSORT = getCookie("allowsort"); if(ALLOWSORT=="allowsort")ALLOWSORT = false;
+var ANIMATIONS = getCookie("animations"); if(ANIMATIONS=="")ANIMATIONS=false;
+var JUSTSOLIDSYMBOLS = getCookie("justsolids"); if(JUSTSOLIDSYMBOLS=="")JUSTSOLIDSYMBOLS= false;
+var AUTODEAL = getCookie("autodeal"); if(AUTODEAL=="") AUTODEAL = true;
+var TWOPLAYER = getCookie("twoplayers");if(TWOPLAYER=="")TWOPLAYER=false;
+var FINDLIMIT = 0; // 0 =  NO LIMIT !!! THIS NUMBER MUST BE A SINGLE DIGIT DUE TO BAD LOGIC - KEEP AT ZERO UNTIL YOU FIX
+var REPLYTIMER = 10; // 0 = NO LIMIT
+var PLAYER1NAME = "Mike";
+var PLAYER2NAME = "Sarah";
+
+var BADDEAL = false;
+var SHORTDECK = false;
+
+var FINDERFADE = 400; // FINDERFADE = "800";
+var DEALSPEED =  200; // 200;
+var flyAwayLeft = "1000px";
+var flyAwayTop = "0px";
+var over = false;
+
+var DIALOGTITLE = '<span style="font-family:Arial">SET</span>'; DIALOGTITLE = '';
+
+// #card positions
+var FIRSTCOLUMN = 180;
+var COLUMNWIDTH = 150;
+var FIRSTROW = 80;
+var ROWHEIGHT = 222;
+
+var deck = [];
+var currentCardPointer = 0;
+var highlighted = 0;
+var setsFound = 0;
+var needCollapse = 0;
+var sortBy = -1;
+var firstRun = true; if( AUTODEAL ) firstRun = false;
+var dealer = 0;
+var adder = 0;
+var asize = 0;
+var currentPlayer = 0;
+var player1 = 0;
+var player2 = 0;
+var firstAttempt = true;
+var timeRemaining;
+var timer;
+var fadetimer;
+
+var FINDERIMG = "imgs/finder2.png";
+var HILITEIMG = "imgs/hilite2.gif";
+
+var DECKSIZE = 81;
+
+var ignoreInput = false;
+
+function writeCookie() {
+	// alert( "WRITE COOKIES" );
+	setCookie( "allowhelp", ALLOWHELP, 7 );
+	setCookie( "allowsort", ALLOWSORT, 7 );
+	setCookie( "animations", ANIMATIONS, 7 );
+	setCookie( "autodeal", AUTODEAL, 7 );
+	setCookie( "justsolids", JUSTSOLIDSYMBOLS, 7 );
+	setCookie( "twoplayers", TWOPLAYER, 7 );
+}
+
+function setCookie(name,value,days) {
+    var expires = "";
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days*24*60*60*1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+}
+function getCookie(name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0;i < ca.length;i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+    }
+    return null;
+}
+
+function gameOver() {
+	if( over ) return;
+	over = true;
+	ignoreInput = true;
+	clearTimeout( timer );
+	firstRun = false;
+	var CONTENT = '<span style="font-family:Arial">Game over. Play again?</span>';
+	if( TWOPLAYER ) {
+		var stuff = "Game over. ";
+		if( player1 > player2 ) stuff += PLAYER1NAME + " wins. ";
+		else if( player2 > player1 ) stuff += PLAYER2NAME + " wins. ";
+		else stuff += "It's a tie. ";
+		stuff += "Play again?";
+		
+		CONTENT = '<span style="font-family:Arial">' + stuff  + '</span>';
+	}
+	$.alert({
+		title: DIALOGTITLE,
+		content: CONTENT,
+		onClose: function() {ignoreInput = false;},
+		useBootstrap: false,
+		animateFromElement: false,
+		boxWidth: '200px',
+		buttons: {
+			Yes: {
+				text: 'Yes',
+				action: function() {
+					ignoreInput = false;
+					newGame();
+				},
+				keys: ['enter','space', 'y'],
+			}, 
+			No: {
+				text: 'No',
+				action: hideEverything,
+				keys: [ 'n' ]
+			},
+		}
+	});
+	$("#findbutton").prop("disabled",true);
+	$("#sortbutton").prop("disabled", true);
+}
+
+function clearHighlighters() {
+	for( var x = 1; x < 22; x++ ) $("#card" + x).empty();
+	highlighted = 0;
+}
+
+function options() {
+	ignoreInput = true;	
+	var content = "<span style='font-family:Arial;'>" +
+	              //"<input type='checkbox' " + (ALLOWHELP ? "checked":"") + " id='ALLOWHELP'> Allow help<br>" +
+	              "<input type='checkbox' " + (ALLOWSORT?"checked":"") + " id='ALLOWSORT'> Allow sort<br>" +
+	              "<input type='checkbox' " + (ANIMATIONS?"checked":"") + " id='ANIMATIONS'> Animations<br>" +
+		      "<input type='checkbox' " + (AUTODEAL?"checked":"") + " id='AUTODEAL'> Autodeal<br>" +
+	              "<input type='checkbox' " + (JUSTSOLIDSYMBOLS?"checked":"") + " id='JUSTSOLIDSYMBOLS'> Just solid symbols<br>" +
+	              "<input type='checkbox' " + (TWOPLAYER?"checked":"") + " id='TWOPLAYER'> Two players<br></span>";
+	$.alert({
+		title: DIALOGTITLE,
+		content: content,
+		useBootstrap: false,
+		animateFromElement: false,
+		boxHeight: '400px',
+		boxWidth: '250px',
+		buttons: {
+			OK: {
+				text: 'OK',
+				action: function() { 
+					var needNewGame = false;
+					if( $("#TWOPLAYER").prop("checked") ) {
+						$("#ALLOWSORT").prop("checked",false);
+						$("#AUTODEAL").prop("checked",true);
+					}
+					ALLOWSORT = $("#ALLOWSORT").prop("checked");
+					ANIMATIONS = $("#ANIMATIONS").prop("checked");
+					AUTODEAL = $("#AUTODEAL").prop("checked");
+					if( JUSTSOLIDSYMBOLS+"" != ""+$("#JUSTSOLIDSYMBOLS").prop("checked") ) {
+						needNewGame = true;
+					}
+					JUSTSOLIDSYMBOLS = $("#JUSTSOLIDSYMBOLS").prop("checked"); // requires newgame
+					if( TWOPLAYER+"" != ""+$("#TWOPLAYER").prop("checked") ) {
+						// requires newgame
+						needNewGame = true;
+					}
+					TWOPLAYER = $("#TWOPLAYER").prop("checked");
+					// animations may have changed, set hilite accordingly
+					if( ANIMATIONS )HILITEIMG = "imgs/hilite2.gif";
+					else HILITEIMG = "imgs/hilite.png";
+					// autodeal may have changed so we need to set click event on deal button
+					if( AUTODEAL && ! over ) {
+						// clear deck onclick
+						$("#deck").attr("onClick",null);
+					}
+					else {
+						$("#deck").attr("onClick", "dealButton();"); // set deck onclick
+					}
+					// sort and help buttons may need drawn or removed
+					if( ALLOWHELP ) {
+						// show button and enable
+						$("#findbutton").prop("disabled",false);
+						$("#findbutton").show();
+					}
+					else {
+						// hide button
+						$("#findbutton").hide();
+					}
+					if( ALLOWSORT ) {
+						// show button and enable
+						if( JUSTSOLIDSYMBOLS ) {
+							if( $("#sortbutton").attr("value") == "Sort by shading" ){
+								$("#sortbutton").attr("value","Sort by color" );
+							}
+						}
+						$("#sortbutton").prop("disabled",false);
+						$("#sortbutton").show();
+					}
+					else {
+						// hide button
+						$("#sortbutton").hide();
+					}
+					writeCookie();
+					ignoreInput = false;
+					if( needNewGame ) {
+						firstRun = false;
+						newGame();
+					}
+				 },
+				keys: ['enter','space']
+			}, 
+			Cancel: {
+				text: 'Cancel',
+			},
+		}
+	});
+	// TODO: Show a higherindex div thats just big enough
+	// It should be much easier to set options, animate switches and whatnot.
+	// You can animate it's appearance if you like.
+}
+
+function sort() {
+	if( $("#sortbutton").prop("disabled") || ignoreInput || over || ! ALLOWSORT ) return;
+	clearHighlighters();
+	sortBy = ( sortBy + 1 ) % 4; // 0, 1, 2, or 3
+	if( JUSTSOLIDSYMBOLS && sortBy == 1 ) sortBy = 2;
+	var hand = [];
+	for( var i = 1; i <= 21; i++ ) {
+		if( $("#card" + i ).css("background-image").length > 4 ) {
+			var v = $("#card" + i ).css("background-image");
+			v = v.substring( v.length-10, v.length-6 );
+			hand.push( v );
+		}
+	}
+	if( sortBy == 0 ) {
+		hand.sort();
+		if( JUSTSOLIDSYMBOLS ) $("#sortbutton").attr("value","Sort by color");
+		else $("#sortbutton").attr("value","Sort by shading");
+	}
+	else if( sortBy == 1 ) {
+		$("#sortbutton").attr("value","Sort by color");
+		// shift first char to end. sort, shift last char to begining
+		for( var i = 0; i < hand.length; i++ ) {
+			var x = hand[i];
+			x = x.substring(1,4) + x.substring(0,1);
+			hand[i] = x;
+		}
+		hand.sort();
+		for( var i = 0; i < hand.length; i++ ) {
+			var x = hand[i];
+			x = x.substring(3,4) + x.substring(0,3);
+			hand[i] = x;
+		}
+	}
+	else if( sortBy == 2 ) {
+		$("#sortbutton").attr("value","Sort by shape");
+		for( var i = 0; i < hand.length; i++ ) {
+			var x = hand[i];
+			x = x.substring(2,4) + x.substring(0,2);
+			hand[i] = x;
+		}
+		// shift first 2 chars to end. sort, shift last 2 chars to begining
+		hand.sort();
+		for( var i = 0; i < hand.length; i++ ) {
+			var x = hand[i];
+			x = x.substring(2,4) + x.substring(0,2);
+			hand[i] = x;
+		}
+	}
+	else if( sortBy == 3 ) {
+		$("#sortbutton").attr("value","Sort by number");
+		// shift last char to start. sort. shift first char to end
+		for( var i = 0; i < hand.length; i++ ) {
+			var x = hand[i];
+			x = x.substring(3,4) + x.substring(0,3);
+			hand[i] = x;
+		}
+		hand.sort();
+		for( var i = 0; i < hand.length; i++ ) {
+			var x = hand[i];
+			x = x.substring(1,4) + x.substring(0,1);
+			hand[i] = x;
+		}
+	}
+	if( ANIMATIONS ) {
+		for( var i = 0; i < 21; i++ ) {
+			var value;
+			if( i >= hand.length ) {
+				value = "";
+			}
+			else {
+				value = "url('imgs/" + hand[i] + ".png'" ;
+			}
+			$("#card" + (i+1) ).css("background-image", value );
+		}
+	}
+	else {
+		for( var i = 0; i < 21; i++ ) {
+			var value;
+			if( i >= hand.length ) {
+				value = "";
+			}
+			else {
+				value = "url('imgs/" + hand[i] + ".png'" ;
+			}
+			$("#card" + (i+1) ).css("background-image", value );
+		}
+	}
+}
+
+function badDeal() {
+	deck = []; // this deck necesitates many "Draw 3 Cards"
+	deck.push("3sgs"); deck.push("3sps"); deck.push("2opd"); deck.push("1tgo"); deck.push("2sps"); deck.push("3sgd"); deck.push("1sgd");
+	deck.push("1tgd"); deck.push("1opo"); deck.push("2srs"); deck.push("3tpo"); deck.push("3ogd"); deck.push("3trs"); deck.push("1spd");
+	deck.push("1oro"); deck.push("3ogo"); deck.push("2spd"); deck.push("1ops"); deck.push("2sro"); deck.push("1tro"); deck.push("3ops");
+	deck.push("1spo"); deck.push("2sgs"); deck.push("3ors"); deck.push("2ogd"); deck.push("1sps"); deck.push("1sgs"); deck.push("1sro");
+	deck.push("1tgs"); deck.push("3tgs"); deck.push("1sgo"); deck.push("2tpo"); deck.push("2spo"); deck.push("3srs"); deck.push("3sgo");
+	deck.push("2tps"); deck.push("1srd"); deck.push("1tpo"); deck.push("1ogo"); deck.push("3oro"); deck.push("1tps"); deck.push("3ogs");
+	deck.push("1srs"); deck.push("2trd"); deck.push("3spo"); deck.push("3tgd"); deck.push("2tgo"); deck.push("3sro"); deck.push("2oro");
+	deck.push("2sgd"); deck.push("3ord"); deck.push("3srd"); deck.push("3tro"); deck.push("2opo"); deck.push("1ogs"); deck.push("2sgo");
+	deck.push("2srd"); deck.push("3spd"); deck.push("2tro"); deck.push("2ogo"); deck.push("3opd"); deck.push("1ord"); deck.push("3tpd");
+	deck.push("2ogs"); deck.push("1opd"); deck.push("2tpd"); deck.push("1ors"); deck.push("1tpd"); deck.push("1trs"); deck.push("1ogd");
+	deck.push("2tgd"); deck.push("3trd"); deck.push("2ord"); deck.push("2trs"); deck.push("1trd"); deck.push("3opo"); deck.push("3tgo");
+	deck.push("2ors"); deck.push("2ops"); deck.push("3tps"); deck.push("2tgs");
+}
+
+function collapse() {
+	if( ANIMATIONS ) { 
+		// This isn't animated, its just here in preparation
+		var collapsed = [];
+		for( var i = 1; i <= 21; i++ ) {
+			if( $("#card" + i ).css("background-image").length > 4 ) {
+				collapsed.push( $("#card" + i ).css("background-image") );
+			}
+		}
+		for( var i = 0; i < 21; i++ ) {
+			if( i >= collapsed.length ) {
+				value = "";
+			}
+			else {
+				value = collapsed[i];
+			}
+			$("#card" + ( i + 1 ) ).css("background-image", value );
+		}
+	}
+	else {
+		var collapsed = [];
+		for( var i = 1; i <= 21; i++ ) {
+			if( $("#card" + i ).css("background-image").length > 4 ) {
+				collapsed.push( $("#card" + i ).css("background-image") );
+			}
+		}
+		for( var i = 0; i < 21; i++ ) {
+			if( i >= collapsed.length ) {
+				value = "";
+			}
+			else {
+				value = collapsed[i];
+			}
+			$("#card" + ( i + 1 ) ).css("background-image", value );
+		}
+	}
+}
+
+function dealButton() {
+	if( ignoreInput ) return;
+	if(currentCardPointer == DECKSIZE ) return;
+	if( firstRun ) {
+		newGame();
+		firstRun = false;
+		return;
+	}
+	if( TWOPLAYER ) return;
+	// first see if there is a set. if so, alert the user and return
+	if( hasSet() ) {
+		ignoreInput = true;
+		$.alert({
+			title: DIALOGTITLE,
+			content: '<span style="font-family:Arial">You cannot draw cards while there is a SET on the board.</span>',
+			animateFromElement: false,
+			useBootstrap: false,
+			boxWidth: '300px',
+			backgroundDismiss: true,
+			onClose: function() {ignoreInput = false;},
+			buttons: {
+				OK: {
+					text: 'OK',
+					keys: ['enter','space','o']
+				} 
+			}
+		});
+		return;
+	}
+	else {
+		// find out how many cards are on the table
+		asize = 0;
+		if( $("#card13").css("background-image").length < 5 ) asize = 12;
+		else if( $("#card16").css("background-image").length < 5 ) asize = 15;
+		else if( $("#card19").css("background-image").length < 5 ) asize = 18;
+
+		// start animating the next three appropriate divs
+		if( currentCardPointer < DECKSIZE ) {
+			if( ! ANIMATIONS  ) {
+				for( var i = 0; i < 3; i ++ ) {
+					$("#card" + (asize+i+1) ).css('background-image', 'url( "imgs/' + deck[ currentCardPointer++ ]  + '.png")');		
+				}
+			}
+			else if( ANIMATIONS ) {
+				ignoreInput = true;
+				adder = 1;
+				var saveTop = $("#card" + ( asize + adder ) ).css("top");
+				var saveLeft = $("#card" + ( asize + adder ) ).css("left");
+				$("#card" + ( asize + adder ) ).css("top", $("#deck").css("top") )
+				$("#card" + ( asize + adder ) ).css("left", $("#deck").css("left") )
+				$("#card" + (asize+adder) ).css('background-image', 'url( "imgs/' + deck[ currentCardPointer++ ]  + '.png")');		
+				$("#card" + (asize+adder)).animate( {top: saveTop, left: saveLeft }, DEALSPEED, nextAdd );
+			}
+		}
+
+		updateDisplay();
+		needCollapse++;
+		if( AUTODEAL && ! hasSet() ){
+			 dealButton();
+		}
+		firstAttempt = true;
+	}
+}
+
+function nextAdd() {
+	updateDisplay();
+	adder++;
+	if( adder > 3 ) {
+		ignoreInput = false;
+		if( AUTODEAL && ! hasSet() ){
+			 dealButton();
+		}
+		return;
+	}
+	var saveTop = $("#card" + (asize+adder) ).css("top");
+	var saveLeft = $("#card" + (asize+adder) ).css("left");
+	$("#card" + (asize+adder) ).css("top", $("#deck").css("top") )
+	$("#card" + (asize+adder) ).css("left", $("#deck").css("left") )
+	$("#card" + (asize+adder)).css('background-image', 'url( "imgs/' + deck[ currentCardPointer++ ]  + '.png")');
+	$("#card" + (asize+adder)).animate( {top: saveTop, left: saveLeft }, DEALSPEED, nextAdd );
+}
+
+function updateDisplay() {
+	if( TWOPLAYER ) {
+		$("#display").html("&nbsp;" + PLAYER1NAME + ": " + player1 + "&nbsp;&nbsp;&nbsp;" + PLAYER2NAME + ": " + player2 + "<br>&nbsp;Cards remaining: " + ( DECKSIZE - currentCardPointer ) );
+	}
+	else {
+		$("#display").html("&nbsp;SETs found: " + setsFound + "<br>&nbsp;Cards remaining: " + ( DECKSIZE - currentCardPointer ) );
+	}
+	if( currentCardPointer == DECKSIZE ) {
+		$("#deck").html($("<img>").attr("src","imgs/empty.png").attr("draggable","false"));
+		$("#deck").attr( "onClick", "" );
+	}
+	if( currentCardPointer == DECKSIZE && ! hasSet() || (TWOPLAYER && ( player1 > 13 || player2> 13 || (JUSTSOLIDSYMBOLS && player1 > 4 ) || ( JUSTSOLIDSYMBOLS && player2 > 4 )   ) ) ) {
+		gameOver();
+	}
+}
+
+function newGame() {
+	$("#lastfound1").hide();
+	$("#lastfound2").hide();
+	$("#lastfound0").hide();
+	$("#lastfoundlabel").hide();
+	clearTimeout( timer );
+	if( REPLYTIMER ) timeRemaining = REPLYTIMER;
+	over = false;
+	player1=0;player2=0;
+	DECKSIZE = 81; if( JUSTSOLIDSYMBOLS ) DECKSIZE = 27;
+	if( ignoreInput ) return;
+	for( var i = 1; i < 22; i++ ) {
+		$("#card" + i).css("background-image","");
+		$("#card" + i).html("");
+	}
+	$("#deck").html($("<img>").attr("src","imgs/back2.png").attr("draggable","false"));
+	if( FINDLIMIT ) $("#findbutton").attr("value", "Help (" + FINDLIMIT + ")" );
+	else $("#findbutton").attr("value", "Help" );
+	needCollapse = 0;
+	setsFound = 0;
+	buildDeck();
+	shuffle( deck );
+	if( BADDEAL ) badDeal();
+	firstDeal();
+	$("#findbutton").prop("disabled",false);
+	$("#sortbutton").prop("disabled",false);
+	updateDisplay();
+}
+
+function hasSet() {
+	var size = 0;
+	if( $("#card13").css("background-image").length < 5 ) size = 12;
+	else if( $("#card16").css("background-image").length < 5 ) size = 15;
+	else if( $("#card19").css("background-image").length < 5 ) size = 18;
+	else size = 21;
+	
+	var found = false;
+	var a,b,c;
+
+	for( var i = 1; i <= size; i++ ) {
+		for( j = i + 1; j <= size; j++ ) {
+			for( var z = 1; z <= size; z++ ) {
+				a = $("#card" + i).css("background-image");
+				b = $("#card" + j).css("background-image");
+				c = $("#card" + z).css("background-image");
+				a = a.substring( a.length - 10, a.length - 6  );
+				b = b.substring( b.length - 10, b.length - 6  );
+				c = c.substring( c.length - 10, c.length - 6  );
+				if( z!=i && z != j  && a.length && b.length && c.length )
+				if( isSet( a,b,c ) ) {
+					found = true;
+					break;
+				}
+				if( found ) break;
+			}
+			if( found ) break;
+		}
+		if( found ) break;
+	}
+	return found;
+}
+
+function findSet() {
+	if( ! ALLOWHELP ) return;
+	if( ignoreInput ) return;
+	if( over ) return;
+	if( $("#findbutton").prop("disabled") ) return;
+	if( FINDLIMIT ) {
+		// get value // TODO; FIX THIS STUPID BUG!!! Search from the open parentheses to the closed one.
+		var value = $("#findbutton").attr("value");
+		var v2 = value.substring( value.length - 2, value.length -1 );
+		// decrement that
+		v2--;
+		// write to button
+		$("#findbutton").attr("value","Help (" + v2 + ")");
+		// if zero, disable button
+		if( v2 == 0 ) {
+			$("#findbutton").prop("disabled",true);
+			$("#findbutton").attr("value","No help left");
+		}
+	}
+	// highlight the first SET found
+
+	var size = 0;
+	if( $("#card13").css("background-image").length < 5 ) size = 12;
+	else if( $("#card16").css("background-image").length < 5 ) size = 15;
+	else if( $("#card19").css("background-image").length < 5 ) size = 18;
+	else size = 21;
+	
+	var found = false;
+	var a,b,c;
+
+	for( var i = 1; i <= size; i++ ) {
+		for( j = i + 1; j <= size; j++ ) {
+			for( var z = 1; z <= size; z++ ) {
+				a = $("#card" + i).css("background-image");
+				b = $("#card" + j).css("background-image");
+				c = $("#card" + z).css("background-image");
+				a = a.substring( a.length - 10, a.length - 6  );
+				b = b.substring( b.length - 10, b.length - 6  );
+				c = c.substring( c.length - 10, c.length - 6  );
+				if( z!=i && z != j && a.length && b.length && c.length )
+				if( isSet( a,b,c ) ) {
+					// hilight set break
+					found = true;
+					break;
+				}
+				if( found ) break;
+			}
+			if( found ) break;
+		}
+		if( found ) break;
+	}
+	if( found ) {
+		var saveList = [];
+		clearHighlighters(); 
+		$("#card" + i).html($("<img>").attr("src",FINDERIMG).attr("class","finder").attr("draggable","false"));
+		$("#card" + j).html($("<img>").attr("src",FINDERIMG).attr("class","finder").attr("draggable","false"));
+		$("#card" + z).html($("<img>").attr("src",FINDERIMG).attr("class","finder").attr("draggable","false"));
+
+		if( ANIMATIONS ) { $(".finder").fadeOut(FINDERFADE, function() { clearHighlighters(); } ); }
+		else { 
+			fadetimer = setTimeout( function(){$(".finder").hide(); clearHighlighters();}, FINDERFADE );
+			
+		}
+	}
+	else {
+		ignoreInput = true;
+		$.alert({
+		    title: DIALOGTITLE,
+		    content: '<span style="font-family:Arial">There are no SETs.</span>',
+				backgroundDismiss: true,
+			animateFromElement: false,
+		    useBootstrap: false,
+			boxWidth: '225px',
+				onClose: function() {ignoreInput = false;},
+				buttons: {
+					OK: {
+						text: 'OK',
+						keys: ['enter','space']
+					} 
+				}
+		});
+	}
+}
+
+function isSet( a, b, c ) {
+	if( ( a[0] == b[0] && b[0] == c[0] && a[0] == c[0]  ) || ( a[0] != b[0] && a[0] != c[0] && b[0] != c[0] ) ) {
+		if( ( a[1] == b[1] && b[1] == c[1] && a[1] == c[1] ) || ( a[1] != b[1] && a[1] != c[1] && c[1] != b[1] ) ) {
+			if( ( a[2] == b[2] && b[2] == c[2] && a[2] == c[2] ) || ( a[2] != b[2] && a[2] != c[2] && c[2] != b[2] ) ) {
+				if( ( a[3] == b[3] && b[3] == c[3] && a[3] == c[3] ) || ( a[3] != b[3] && a[3] != c[3] && b[3] != c[3] ) ) {
+					return true;
+				}
+				else return false;
+			}
+			else return false;
+		}
+		else return false;
+	}
+	else return false;
+}
+
+function replaceSelected( selected ) {
+	if( ! ANIMATIONS ) {
+		var i;
+		for( i in selected ) {
+			$("#card" + selected[i] ).css('background-image', 'url( "imgs/' + deck[ currentCardPointer++ ]  + '.png")');		
+		}
+		updateDisplay();
+		if( AUTODEAL && ! hasSet() ) dealButton();
+	}
+	else {
+		ignoreInput = true;
+		var saveTop = $("#card" + selected[0] ).css("top");
+		var saveLeft = $("#card" + selected[0] ).css("left");
+		$("#card" + selected[0] ).css("top", $("#deck").css("top") )
+		$("#card" + selected[0] ).css("left", $("#deck").css("left") )
+		$("#card" + selected[0] ).css('background-image', 'url( "imgs/' + deck[ currentCardPointer++ ]  + '.png")');		
+		$("#card" + selected[0]).animate( {top: saveTop, left: saveLeft }, DEALSPEED, function() {
+			updateDisplay();
+			var saveTop = $("#card" + selected[1] ).css("top");
+			var saveLeft = $("#card" + selected[1] ).css("left");
+			$("#card" + selected[1] ).css("top", $("#deck").css("top") )
+			$("#card" + selected[1] ).css("left", $("#deck").css("left") )
+			$("#card" + selected[1] ).css('background-image', 'url( "imgs/' + deck[ currentCardPointer++ ]  + '.png")');		
+			$("#card" + selected[1]).animate( {top: saveTop, left: saveLeft }, DEALSPEED, function() {
+				updateDisplay();
+				var saveTop = $("#card" + selected[2] ).css("top");
+				var saveLeft = $("#card" + selected[2] ).css("left");
+				$("#card" + selected[2] ).css("top", $("#deck").css("top") )
+				$("#card" + selected[2] ).css("left", $("#deck").css("left") )
+				$("#card" + selected[2] ).css('background-image', 'url( "imgs/' + deck[ currentCardPointer++ ]  + '.png")');		
+				$("#card" + selected[2]).animate( {top: saveTop, left: saveLeft }, DEALSPEED, function() {
+					updateDisplay();
+					ignoreInput = false;
+					if( AUTODEAL && ! hasSet() ) dealButton();
+				});
+			});
+		});
+	}
+}
+
+function flyAwayAndReplace( selected ) {
+	$("#mover").show();
+	$("#mover").css("top", $("#card" + selected[0]).css("top"));
+	$("#mover").css("left", $("#card" + selected[0]).css("left"));
+	$("#mover").css('background-image', $("#card" + selected[0]).css('background-image'));
+	$("#card" + selected[0]).css('background-image', '');
+	$("#mover").animate( {top: flyAwayTop, left: flyAwayLeft }, DEALSPEED, function() {
+		$("#mover").css("top", $("#card" + selected[1]).css("top"));
+		$("#mover").css("left", $("#card" + selected[1]).css("left"));
+		$("#mover").css('background-image', $("#card" + selected[1]).css('background-image'));
+		$("#card" + selected[1]).css('background-image', '');
+		$("#mover").animate( {top: flyAwayTop, left: flyAwayLeft }, DEALSPEED, function() {
+			$("#mover").css("top", $("#card" + selected[2]).css("top"));
+			$("#mover").css("left", $("#card" + selected[2]).css("left"));
+			$("#mover").css('background-image', $("#card" + selected[2]).css('background-image') );
+			$("#card" + selected[2]).css('background-image', '');
+			$("#mover").animate( {top: flyAwayTop, left: flyAwayLeft }, DEALSPEED, function() {
+				$("#mover").hide();
+				replaceSelected( selected );
+			});
+		});
+	});
+}
+
+function flyAwayAndCollapse( selected ) {
+	// all 3 cards can fly away together, folled by a function to collapse, clear hilight.gif, update display, and check for game over
+	// TODO make the current cards fly away to top 0 left 1000
+	$("#mover").show();
+	$("#mover").css("top", $("#card" + selected[0]).css("top"));
+	$("#mover").css("left", $("#card" + selected[0]).css("left"));
+	$("#mover").css('background-image', $("#card" + selected[0]).css('background-image'));
+	$("#card" + selected[0]).css('background-image', '');
+	$("#mover").animate( {top: flyAwayTop, left: flyAwayLeft }, DEALSPEED, function() {
+		$("#mover").css("top", $("#card" + selected[1]).css("top"));
+		$("#mover").css("left", $("#card" + selected[1]).css("left"));
+		$("#mover").css('background-image', $("#card" + selected[1]).css('background-image'));
+		$("#card" + selected[1]).css('background-image', '');
+		$("#mover").animate( {top: flyAwayTop, left: flyAwayLeft }, DEALSPEED, function() {
+			$("#mover").css("top", $("#card" + selected[2]).css("top"));
+			$("#mover").css("left", $("#card" + selected[2]).css("left"));
+			$("#mover").css('background-image', $("#card" + selected[2]).css('background-image') );
+			$("#card" + selected[2]).css('background-image', '');
+			$("#mover").animate( {top: flyAwayTop, left: flyAwayLeft }, DEALSPEED, function() {
+				$("#mover").hide();
+				collapse();
+				needCollapse--; if( needCollapse < 0 ) needCollapse = 0;
+				if( AUTODEAL && ! hasSet() ) dealButton();
+				updateDisplay();
+			});
+		});
+	});
+}
+
+function testSet() {
+	if( TWOPLAYER && REPLYTIMER ) {
+		if( currentPlayer == 1 ) $("#curplayer").html(PLAYER1NAME);
+		else if( currentPlayer == 2 ) $("#curplayer").html(PLAYER2NAME); 
+		clearTimeout( timer );
+	}
+	// Three cards have been selected by the player.
+	// Need to determine which ones.
+	// Need to determine their values
+	var s;
+	var selected = [];
+	var values = [];
+	for( var i  = 1; i <=21; i++ ) {
+		if( $("#card" + i ).html().length ) selected.push( i );
+	}
+	values[0] = $("#card" + selected[0]).css("background-image");
+ 	values[1] = $("#card" + selected[1]).css("background-image");
+ 	values[2] = $("#card" + selected[2]).css("background-image");
+	
+	values[0] = values[0].substring( values[0].length - 10, values[0].length - 6  );
+	values[1] = values[1].substring( values[1].length - 10, values[1].length - 6  );
+	values[2] = values[2].substring( values[2].length - 10, values[2].length - 6  );
+
+	if( isSet( values[0], values[1], values[2] ) ) {
+		var i;
+		for( i in selected ) {
+			$("#lastfound" + (i ) ).attr( "src", "imgs/" + values[i] + ".png" );
+			$("#lastfound0").show();
+			$("#lastfound1").show();
+			$("#lastfound2").show();
+			$("#lastfoundlabel").show();
+		}
+		setsFound++;
+		firstAttempt = true;
+		if( TWOPLAYER ) {
+			$("#curplayer").html("");
+			if( currentPlayer == 1 ) player1++;
+			else if( currentPlayer == 2 ) player2++;
+			currentPlayer = 0;
+		}
+		updateDisplay();
+		// replace these three cards with cards from the deck
+		var shortCollapse = false;
+		if( needCollapse ) {
+			clearHighlighters();
+			if( ANIMATIONS ) flyAwayAndCollapse( selected );
+			else {
+				var i;
+				for( i in selected ) {
+					$("#card" + selected[i]).css('background-image', '');
+				}
+				collapse();
+				needCollapse--; if( needCollapse < 0 ) needCollapse = 0;
+				if( AUTODEAL && ! hasSet() ) dealButton();
+				updateDisplay();
+			}
+			return;
+		}
+		else {
+			clearHighlighters();
+			if( currentCardPointer < DECKSIZE ) {
+				// TODO make the current cards fly away
+				// TODO make the new cards fly in from deck
+				if( ANIMATIONS ) {
+					ignoreInput = true;
+					flyAwayAndReplace( selected );
+				}
+				else {
+					var i;
+					for( i in selected ) {
+						$("#card" + selected[i]).css('background-image', '');
+					}
+					replaceSelected( selected );
+				}
+			}
+			else {
+				// TODO make the current cards fly away
+				if( ANIMATIONS ) flyAwayAndCollapse( selected );
+				else {
+					var i;
+					for( i in selected ) {
+						$("#card" + selected[i]).css('background-image', '');
+					}
+					collapse();
+					needCollapse--; if( needCollapse < 0 ) needCollapse = 0;
+					if( AUTODEAL && ! hasSet() ) dealButton();
+					updateDisplay();
+				}
+				return;
+			}
+		}
+	}
+	else {
+		ignoreInput = true;
+		$.alert({
+		    title: DIALOGTITLE,
+			animateFromElement: false,
+		    content: '<span style="font-family:Arial">This is not a SET.</span>',
+			backgroundDismiss: true,
+		    useBootstrap: false,
+		    boxWidth: '200px', 
+			onClose: function(){
+				clearHighlighters();
+				if( TWOPLAYER ) {
+					timeRemaining = REPLYTIMER;
+					if( firstAttempt ) {
+						firstAttempt = false;
+						currentPlayer = 3 - currentPlayer;
+						if( currentPlayer == 1 ) $("#curplayer").html(PLAYER1NAME+" 0:" + ((timeRemaining<10)?"0":"") +timeRemaining);
+						else if( currentPlayer == 2 ) $("#curplayer").html(PLAYER2NAME+" 0:"+ ((timeRemaining<10)?"0":"")+timeRemaining); 
+						timer = setTimeout( tickTock, 1000 );
+					}
+					else {
+						$("#curplayer").html("");
+						currentPlayer = 0;
+					}
+				}
+				ignoreInput = false;
+			},
+				buttons: {
+					OK: {
+						text: 'OK',
+						keys: ['enter','space']
+					} 
+				}
+		});
+	}
+}
+
+function buildDeck() {
+	deck = [];
+	currentCardPointer = 0;
+	if( SHORTDECK ) currentCardPointer = 69;
+
+	if( JUSTSOLIDSYMBOLS ) {
+		var number = [ "1", "2", "3" ];
+		var color = [ "r", "g", "p" ];
+		var shape = [ "d", "o", "s" ];
+		var n,c,p;
+		for( n in number )
+		for( c in color )
+		for( p in shape )
+		deck.push( number[n] + "s" + color[c] + shape[p] );
+	}
+	else {
+		var number = [ "1", "2", "3" ];
+		var shade = [ "s", "t", "o" ];
+		var color = [ "r", "g", "p" ];
+		var shape = [ "d", "o", "s" ];
+		var n,s,c,p;
+		for( n in number )
+		for( s in shade )
+		for( c in color )
+		for( p in shape )
+		deck.push( number[n] + shade[s] + color[c] + shape[p] );
+	}
+}
+
+function shuffle( array ) {
+	var m = array.length, t, i;
+	while( m ) {
+		i = Math.floor( Math.random() * m-- );
+		t = array[m];
+		array[m] = array[i];
+		array[i] = t;
+	}
+	return array;
+}
+
+function cardClick( i ) {
+	clearTimeout( fadetimer );
+	if( TWOPLAYER && currentPlayer == 0 ) return;
+	if( ignoreInput ) return;
+	if( ! ( $("#card" + i).css("background-image").length > 4 ) ) return; // user clicked an empty div
+	var value = $("#card" + i ).html();
+	if( value.length ) {
+		$("#card" + i).empty();
+		highlighted--;
+	}
+	else {
+		$("#card" + i).html($("<img>").attr("src", HILITEIMG).attr("draggable","false"));
+		if( ++highlighted == 3 ) testSet();
+	}
+}
+
+function nextDeal() {
+	updateDisplay();
+	dealer++;
+	if( dealer > 12 ) {
+		ignoreInput = false;
+		if( AUTODEAL && ! hasSet() ) dealButton();
+		return;
+	}
+	var saveTop = $("#card" + dealer ).css("top");
+	var saveLeft = $("#card" + dealer ).css("left");
+	$("#card" + dealer ).css("top", $("#deck").css("top") )
+	$("#card" + dealer ).css("left", $("#deck").css("left") )
+	$("#card" + dealer).css('background-image', 'url( "imgs/' + deck[ currentCardPointer++ ]  + '.png")');
+	$("#card" + dealer).animate( {top: saveTop, left: saveLeft }, DEALSPEED, nextDeal );
+}
+
+function firstDeal() {
+	if( ! ANIMATIONS ) {
+		for( var i = 0; i < 12; i++ ) {
+			$("#card" + (i + 1)).css('background-image', 'url( "imgs/' + deck[ currentCardPointer++ ]  + '.png")');
+		}
+		if( AUTODEAL && ! hasSet() ) dealButton();
+		ignoreInput = false;
+		return;
+	}
+	
+	ignoreInput = true;
+	dealer = 1;
+	//TODO : add a nice jquery animation here.
+	var saveTop = $("#card" + dealer ).css("top");
+	var saveLeft = $("#card" + dealer ).css("left");
+	$("#card" + dealer ).css("top", $("#deck").css("top") )
+	$("#card" + dealer ).css("left", $("#deck").css("left") )
+	$("#card" + dealer).css('background-image', 'url( "imgs/' + deck[ currentCardPointer++ ]  + '.png")');
+	$("#card" + dealer).animate( {top: saveTop, left: saveLeft }, DEALSPEED, nextDeal );
+}
+
+function tickTock() {
+	timeRemaining--;
+	if( timeRemaining ) {
+		var name;
+		if( currentPlayer == 1 ) name = PLAYER1NAME;
+		else if( currentPlayer == 2 ) name = PLAYER2NAME;
+		else name = "error"; // should never happen
+		$("#curplayer").html( name + " 0:" + ((timeRemaining<10)?"0":"") + timeRemaining );
+		timer = setTimeout( tickTock, 1000 );
+	}
+	else {
+		timeRemaining = REPLYTIMER;
+		clearHighlighters();
+		ignoreInput = true;
+		if( currentPlayer == 1 ) {
+			$("#curplayer").html(PLAYER1NAME);
+			var CONTENT =   "<span style='font-family:Arial;'>" + PLAYER1NAME + ", your time is up.<br>" ;
+			if( firstAttempt ) CONTENT += " " + PLAYER2NAME + ", can you find a SET?";
+			CONTENT += "</span>";
+			$.alert({
+				title: DIALOGTITLE,
+				content: CONTENT,
+				useBootstrap: false,
+				animateFromElement: false,
+				boxWidth: '200px',
+				buttons: {
+					OK: {
+						text: 'OK',
+						action: function() {
+							if( firstAttempt ) {
+								firstAttempt = false;
+								currentPlayer = 3 - currentPlayer;
+								if( currentPlayer == 1 ) $("#curplayer").html(PLAYER1NAME+" 0:"+((timeRemaining<10)?"0":"")+timeRemaining);
+								else if( currentPlayer == 2 ) $("#curplayer").html(PLAYER2NAME+" 0:"+((timeRemaining<10)?"0":"")+timeRemaining); 
+								timer = setTimeout( tickTock, 1000 );
+							}
+							else {
+								$("#curplayer").html("");
+								currentPlayer = 0;
+							}
+							ignoreInput = false;
+						},
+						keys: ['enter','space', 'o'],
+					}
+				}
+			});
+			return;
+		}
+		else if( currentPlayer == 2 ) {
+			$("#curplayer").html(PLAYER2NAME); 
+			// alert( PLAYER2NAME + ", your time is up." );
+			var CONTENT =   "<span style='font-family:Arial;'>" + PLAYER2NAME + ", your time is up.<br>" ;
+			if( firstAttempt ) CONTENT += " " + PLAYER1NAME + ", can you find a SET?";
+			CONTENT += "</span>";
+			$.alert({
+				title: DIALOGTITLE,
+				content: CONTENT,
+				useBootstrap: false,
+				animateFromElement: false,
+				boxWidth: '200px',
+				buttons: {
+					OK: {
+						text: 'OK',
+						action: function() {
+							if( firstAttempt ) {
+								firstAttempt = false;
+								currentPlayer = 3 - currentPlayer;
+								if( currentPlayer == 1 ) $("#curplayer").html(PLAYER1NAME+" 0:"+((timeRemaining<10)?"0":"")+timeRemaining);
+								else if( currentPlayer == 2 ) $("#curplayer").html(PLAYER2NAME+" 0:"+((timeRemaining<10)?"0":"")+timeRemaining); 
+								timer = setTimeout( tickTock, 1000 );
+							}
+							else {
+								$("#curplayer").html("");
+								currentPlayer = 0;
+							}
+							ignoreInput = false;
+						},
+						keys: ['enter','space', 'o'],
+					}
+				}
+			});
+			return;
+		}
+	}
+}
+
+function initialize() {
+
+	if( TWOPLAYER ) {
+		AUTODEAL = true;
+		ALLOWSORT = false;
+		ALLOWHELP = false;
+	}
+	if( ! ANIMATIONS ) HILITEIMG = "imgs/hilite.png";
+
+	// This code binds keystrokes to functions
+	$(document).on('keyup', function(e){
+		if( ignoreInput ) return;
+		if( over ) {
+			if( e.which == 192 ) {
+				dealButton();
+				return;
+			}
+			else return;
+		}
+		if(TWOPLAYER && currentPlayer == 0 ){
+			if( e.which == 90 ) {
+				timeRemaining = REPLYTIMER;
+				// Player 2 clicked in
+				currentPlayer = 1;
+				var val;
+				val = PLAYER1NAME;
+				if( REPLYTIMER ) val += " 0:" + ((timeRemaining<10)?"0":"") + timeRemaining;
+				$("#curplayer").html(val);
+				timer = setTimeout( tickTock, 1000 );
+				return;
+			}
+			else if( e.which == 77 ) {
+				timeRemaining = REPLYTIMER;
+				// Player 2 clicked in
+				currentPlayer = 2;
+				var val;
+				val = PLAYER2NAME;
+				if( REPLYTIMER ) val += " 0:" + ((timeRemaining<10)?"0":"") + timeRemaining;
+				$("#curplayer").html(val);
+				timer = setTimeout( tickTock, 1000 );
+				return;
+			}
+		}
+		if( e.which == 192 ) dealButton(); // ` for deal/draw cards
+		else if( e.which == 80 ) findSet(); // p for help
+		else if( e.which == 79 ) sort(); // o for sort (order)
+		else if( e.which == 81 ) cardClick(1);
+		else if( e.which == 65 ) cardClick(2);
+		else if( e.which == 87 ) cardClick(4);
+		else if( e.which == 69 ) cardClick(7);
+		else if( e.which == 82 ) cardClick(10);
+		else if( e.which == 84 ) cardClick(13);
+		else if( e.which == 89 ) cardClick(16);
+		else if( e.which == 85 ) cardClick(19);
+		else if( e.which == 83 ) cardClick(5);
+		else if( e.which == 68 ) cardClick(8);
+		else if( e.which == 70 ) cardClick(11);
+		else if( e.which == 71 ) cardClick(14);
+		else if( e.which == 72 ) cardClick(17);
+		else if( e.which == 74 ) cardClick(20);
+		else if( e.which == 90 ) cardClick(3);
+		else if( e.which == 88 ) cardClick(6);
+		else if( e.which == 67 ) cardClick(9);
+		else if( e.which == 86 ) cardClick(12);
+		else if( e.which == 66 ) cardClick(15);
+		else if( e.which == 78 ) cardClick(18);
+		else if( e.which == 77 ) cardClick(21);
+	});
+
+	// This prevents the selection of text in most browsers
+	$("body").css("-webkit-touch-callout","none");
+	$("body").css("-webkit-user-select","none");
+	$("body").css("-khtml-user-select","none");
+	$("body").css("-moz-user-select","none");
+	$("body").css("-ms-user-select","none");
+	$("body").css("user-select","none");
+ 
+	// This prevents a context menu
+	document.addEventListener('contextmenu', event => event.preventDefault());
+
+	// This sets a favicon
+	var link = document.createElement('link');
+	link.type = 'image/x-icon';
+	link.rel = 'shortcut icon';
+	link.href = 'imgs/squiggle-icon.png';
+	document.getElementsByTagName('head')[0].appendChild(link);
+
+	// Page title and background
+	top.document.title = "SET: The Family Game of Visual Perception, v" + VERSION;
+	$("body").css('background-color', '#002000');
+
+	// this code preloads the deck images YOU SHOULD ONLY PRELOAD WHAT YOU NEED
+	var imgs = [];
+	var number = [ "1", "2", "3" ];
+	var shade = [ "s", "t", "o" ];
+	var color = [ "r", "g", "p" ];
+	var shape = [ "d", "o", "s" ];
+	var n,s,c,p;
+	for( n in number )
+	for( s in shade )
+	for( c in color )
+	for( p in shape )
+	imgs.push( "imgs/" + number[n] + shade[s] + color[c] + shape[p] + ".png" );
+	imgs.push( FINDERIMG );
+	imgs.push( HILITEIMG );
+	imgs.push( "imgs/empty.png" );
+	preload( imgs );
+
+	// add buttons for new game, deal, and find set
+	$("body").append("<input type=button id='newgamebutton' value='New Game'>");
+
+	if( FINDLIMIT ) {
+		$("body").append("<input type=button id='findbutton' value='Help (" + FINDLIMIT + ")'>");
+	} else {
+		$("body").append("<input type=button id='findbutton' value='Help'>");
+	}
+	$("body").append("<input type=button id='sortbutton' value='Sort by number'>");
+	$("body").append("<div id='display'></div>");
+	$("body").append("<div id='mover'></div>");
+	$("body").append("<div id='deck'></div>");
+	$("body").append($("<img>")
+		.attr("id","opts")
+		.attr("src","imgs/opts.png")
+		.attr("draggable","false")
+		.attr("onClick","options();"));
+
+	$("body").append( $("<img/>")
+		.attr("id","lastfound0")
+		.css("top","335px")
+		.css("left","12px")
+		.css("height","64.8px")
+		.css("width","43.2px")
+		.css("position","absolute") );
+	$("body").append( $("<img/>")
+		.attr("id","lastfound1")
+		.css("top","335px")
+		.css("left","61px")
+		.css("height","64.8px")
+		.css("width","43.2px")
+		.css("position","absolute") );
+	$("body").append( $("<img/>")
+		.attr("id","lastfound2")
+		.css("top","335px")
+		.css("left","110px")
+		.css("height","64.8px")
+		.css("width","43.2px")
+		.css("position","absolute") );
+	$("body").append( $("<div/>")
+		.attr("id","lastfoundlabel" )
+		.css("color","white")
+		.css("font-family","Arial")
+		.css("position","absolute")
+		.css("top","310px")
+		.css("left","12px")
+		.html("Last SET"));
+
+
+	$("#lastfound1").hide();
+	$("#lastfound2").hide();
+	$("#lastfound0").hide();
+	$("#lastfoundlabel").hide();
+	
+	// position
+	$("#newgamebutton").css("position", "absolute");
+	$("#newgamebutton").css("width", "120px");
+	$("#newgamebutton").css("height", "30px");
+	$("#newgamebutton").css("top", "340px");//40
+	$("#newgamebutton").hide();
+	$("#findbutton").css("position", "absolute");
+	$("#findbutton").css("width", "120px");
+	$("#findbutton").css("height", "30px");
+	$("#findbutton").css("top", "420px");//120
+	if( ! ALLOWHELP ) $("#findbutton").hide();
+	$("#sortbutton").css("position", "absolute");
+	$("#sortbutton").css("width", "120px");
+	$("#sortbutton").css("height", "30px");
+	$("#sortbutton").css("top", "460px");//160
+	if( ! ALLOWSORT ) $("#sortbutton").hide();
+	$("#display").css("position", "absolute");
+	$("#display").css("width", "444px");
+	$("#display").css("height", "40px");
+	$("#display").css("top", "16px"); // 200
+	$("#display").css("left", "38px"); // 200
+	 //$("#display").css("background-image", 'url("imgs/setcardtemplate.png")');
+	// $("#display").css("background", 'white');
+	// $("#display").css("border", '1px solid grey');
+	$("#display").css("color", 'white');
+	$("#display").css("font-family", "Arial");
+	$("#display").css("padding-top", "4px");
+	$("#opts").css("position","absolute");
+	$("#opts").css("top","24px");
+	$("#opts").css("left","10px");
+	$("#findbutton").prop("disabled",true);
+	$("#sortbutton").prop("disabled",true);
+	updateDisplay();
+
+	// functions
+	$("#newgamebutton").click(function(){ 
+		//location.reload( false );
+		newGame();
+		firstRun = false;
+	}); 
+	$("#sortbutton").click(function(){ 
+		sort();
+		// iterate thru the different ways to sort: by number, color, shading, and shape
+	}); 
+	//$("#dealbutton").click(function(){
+	//	dealButton();
+	//}); 
+	$("#findbutton").click(function(){
+		findSet();
+	});
+
+	for( var i = 1; i <= 21; i++ ) {
+		$("body").append("<div onClick='cardClick(" + i + ")' id='card" + i + "'></div>");
+		$("#card" + i).css("position", "absolute");
+		$("#card" + i).css("width", "144px");
+		$("#card" + i).css("height", "216px");
+		$("#card" + i).css("left", (i<4?FIRSTCOLUMN:(i<7?FIRSTCOLUMN+COLUMNWIDTH:(i<10?FIRSTCOLUMN+2*COLUMNWIDTH:(i<13?FIRSTCOLUMN+3*COLUMNWIDTH:(i<16?FIRSTCOLUMN+4*COLUMNWIDTH:(i<19?FIRSTCOLUMN+5*COLUMNWIDTH:FIRSTCOLUMN+6*COLUMNWIDTH)))))) + "px");
+		$("#card" + i).css("top", (((i-1)%3)*ROWHEIGHT)+FIRSTROW + "px");
+	}
+	$("#mover").css("position", "absolute" );
+	$("#mover").css("width", "144px" );
+	$("#mover").css("height", "216px" );
+	$("#mover").hide();
+	$("#deck").css("position", "absolute" );
+	$("#deck").css("width", "144px" );
+	$("#deck").css("height", "216px" );
+	$("#deck").css("top", "80px" );
+	$("#deck").css("left", "12px" );
+	$("#deck").html($("<img>")
+		.attr("src","imgs/back2.png")
+		.attr("draggable","false"));
+	if( ! AUTODEAL ) $("#deck").attr("onClick", "dealButton();");
+	$("body").append("<div id='curplayer'></div>");
+	$("#curplayer").css("position","absolute")
+		.css("left","180px")
+		.css("top","750px")
+		.css("height","200px;")
+		.css("width","800px")
+		.css("color","white")
+		.css("font-family","Arial")
+		.css("font-size","64pt");
+
+}
+
+function preload(arrayOfImages) {
+    $(arrayOfImages).each(function(){
+        $('<img/>')[0].src = this;
+    });
+}
+
+function hideEverything() {
+	// $("body").html("");
+	// reset the flag that makes the deck a firstDeal button
+	firstRun = true;
+	// also need to activate the onClick function for #deck
+	$("#deck").attr("onClick", "dealButton();");
+	// also need to change card pointer or else the onClick function for deck won't triggrt
+	currentCardPointer = 0;
+}
+
+$(document).ready(function(){
+	initialize();
+	if( AUTODEAL ) {
+		firstRun = false;
+		newGame();
+	}
+});
+
+
+
+</script>
+</head>
+<body>
+</body>
+</html>
