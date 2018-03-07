@@ -1,7 +1,7 @@
 var cacheName = 'weatherPWA-step-6-1';
 var filesToCache = [
   'https://bingmike.github.io/set/',
-  'https://bingmike.github.io/set/index.html',
+  'https://bingmike.github.io/set/index.htm',
   'https://bingmike.github.io/set/set.js',
   'https://bingmike.github.io/set/setgame.js',
   'https://bingmike.github.io/set/imgs/1ogd.png',
