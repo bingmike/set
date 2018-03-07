@@ -8,20 +8,10 @@ February-March 2018
 ******************************************************************************
 TODO 
 
-CRITICAL dealer gives up control too slowly after replacing cards. Is this updateDisplay() ?
-FEATURE All cards need to be replaced. SVG would be ideal.
-ANNOYING the first deal isn't cached, very noticeable on new game
-	maybe the first deal could utilize an onLoad trigger
-FEATURE animate card movements: deals and set burns
-FEATURE discreet options?
-
-Lower Priority
-
-FEATURE it might be faster to show red x if it was already under the card with a low zIndex that you could toggle
-FEATURE after a minute of inactivity, provide a hint. 
-FEATURE splash screen? Can define one in the manifest i think, just learned about PWA
-DREAM A function that generates SVG images on the fly . Maybe a php app that returns svg files? 
-DREAM 3d cards with images on both sides, shadows
+FEATURE discreet options: jrdeck, hintdelay, infinite play, etc?
+FEATURE better splash screen, icons, cards
+FEATURE highlighter looks like crap on mobile
+FEATURE highlighter is sluggish on mobile. do a zindex swap.
 
 *****************************************************************************/
 
@@ -29,14 +19,11 @@ var SetGame = function( targetId ){
 	const VERSION = "0.8";
 	const TITLE = "SET: The Family Game of Visual Perception, v" + VERSION;
 	const IMAGEPATH = "imgs/";
-	// const IMAGEPATH = "svg/"; // SVGs are begun. They look awesome.
 	const HILITEIMG = IMAGEPATH + "hilite2.gif";
 	const REDXIMG =  IMAGEPATH + "x.svg";
 	const JUNIORDECK = false;
 	const BADDEAL = false;
-	const DEALSPEED = 240; // "slow"; //100;
 	const REDXFADE = 800;
-	const DIALOGTITLE = '<span style="font-family:Arial">SET</span>'; // DIALOGTITLE = '';
 
 	var deck = null;
 	var cardsInPlay = null;
