@@ -34,6 +34,9 @@ var SetGame = function( targetId ){
 	var ignoreInputFlag = true;
 	var carddivs = [];
 
+	var hintTimer = null;
+	var HINTINTERVAL = 45000;
+
 	top.document.title = TITLE;
 	window.addEventListener("resize", onResize);
 
@@ -146,7 +149,8 @@ var SetGame = function( targetId ){
 	var clearSelection = function() {
 		forEach( selectedCards, function( item, i ) {
 			var d = document.getElementById( "hilite" + item );
-			d.parentNode.removeChild( d );
+			// d.parentNode.removeChild( d );
+			d.style.visibility = "hidden";
 		});
 	};
 
@@ -248,6 +252,7 @@ var SetGame = function( targetId ){
 		}
 		preloadNextThree();
 		ignoreInputFlag = false;
+		resetHintTimer();
 	};
 
 	var gameOverDialog = function() {
@@ -281,7 +286,53 @@ var SetGame = function( targetId ){
 		}
 	};
 
+	var getHint = function() {
+		Array.prototype.diff = function(a) {
+		    return this.filter(function(i) {return a.indexOf(i) < 0;});
+		}; // now [1,2,3].diff( [2] ) = [1,3], but we have strings in selectedcards
+
+		// get a set of indices that would make a set
+		var c = cardsInPlay.getSet();
+
+		// subtract the indices in selectedcards
+		forEach( selectedCards, function( item, i ) {
+			c = c.diff( [ parseInt( item ) ] );	
+		});
+		// return the first one, not a random one.
+		return c[0];
+	};
+
+	var hintOff = function( el ) {
+		el.style.visibility = "visible";
+	};
+
+	var hintOn = function( el ) {
+		el.style.visibility = "hidden";
+	};
+
+	var resetHintTimer = function() {
+		clearInterval( hintTimer );
+		hintTimer = setInterval( function() {
+			// find the set, subtract any selectedcards, take the first one
+			var hint = getHint();
+			console.log( "HINT! Position " + hint );
+			var el = document.getElementById( "img" + hint );
+			// apply the pulse animation class and setTimeout to remove the class
+			hintOn(el);
+			setTimeout( function(){
+				hintOff(el);
+			}, 100 );
+			setTimeout( function(){
+				hintOn(el);
+			}, 200 );
+			setTimeout( function(){
+				hintOff(el);
+			}, 300 );
+		}, HINTINTERVAL );
+	};
+
 	var cardClick = function(idee) {
+		resetHintTimer();
 		if( ignoreInputFlag ) {
 			return;
 		}
@@ -292,22 +343,29 @@ var SetGame = function( targetId ){
 			// not selected. select it
 			selectedCards.push( id );
 			var d = carddivs[id];
-			var im = document.createElement( "img" );
-			im.setAttribute( "src", HILITEIMG );
-			im.setAttribute( "draggable", "false" );
-			im.setAttribute( "id", "hilite"+id );
-			im.setAttribute( "width", cardWidth );
-			im.setAttribute( "height", cardHeight );
-			im.style.position = "absolute";
-			im.style.left = 0;
-			im.style["top"] = 0;
-			d.appendChild( im );
+			var im = document.getElementById( "hilite" + id );
+			if( im ) {
+				im.style.visibility = "visible";
+			}
+			else {
+				im = document.createElement( "img" );
+				im.setAttribute( "src", HILITEIMG );
+				im.setAttribute( "draggable", "false" );
+				im.setAttribute( "id", "hilite"+id );
+				im.setAttribute( "width", cardWidth );
+				im.setAttribute( "height", cardHeight );
+				im.style.position = "absolute";
+				im.style.left = 0;
+				im.style["top"] = 0;
+				d.appendChild( im );
+			}
 			if( selectedCards.length == 3 ) testSelected();
 		} else {
 			// is selected. deselect it
 			selectedCards.splice( i, 1 );
 			var d = document.getElementById( "hilite" + id );
-			d.parentNode.removeChild( d );
+			// d.parentNode.removeChild( d );
+			d.style.visibility = "hidden";
 		}
 	};
 
@@ -399,6 +457,16 @@ var SetGame = function( targetId ){
 			d.style.zIndex = "2";
 			felt.appendChild( d );
 			carddivs.push( d );
+
+			var im = document.createElement( "img" );
+			im.setAttribute( "src", HILITEIMG );
+			im.setAttribute( "draggable", "false" );
+			im.setAttribute( "id", "hilite"+(3*i+j) );
+			im.style.position = "absolute";
+			im.style.visibility = "hidden";
+			im.style.left = 0;
+			im.style["top"] = 0;
+			d.appendChild( im );
 		}
 	}
 	newGame();

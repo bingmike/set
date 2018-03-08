@@ -33,6 +33,7 @@ function SetStack() {
 	this.toString		= setStackToString;
 	this.replace		= setStackReplace;
 	this.collapse		= setStackCollapse;
+	this.getSet		= setStackGetSet;
 }
 
 function setStackMakeBadDeck() { // This deal requires 2 extra rows (18 cards total) to find the 1st set. For testing.
@@ -264,6 +265,19 @@ function setStackHasSet(){
 		}
 	}
 	return false;
+}
+
+function setStackGetSet() {
+	for( var i = 0; i < this.cards.length; i++ ) {
+		for( j = i + 1; j < this.cards.length; j++ ) {
+			for( var z = 0; z < this.cards.length; z++ ) {
+				if( z != i && z != j )
+				if( isSet(this.cards[i], this.cards[j], this.cards[z]) ) {
+					return new Array( i,j,z);
+				}
+			}
+		}
+	}
 }
 
 function setStackGetSetCount(){
