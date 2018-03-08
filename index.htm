@@ -112,19 +112,20 @@ body {
 }
 
 @keyframes throb {
-	0% { opacity: 1 }
-	50%{ opacity: 0 }
-	100%{ opacity: 1 }
+	0% { transform: scale3d(1, 1, 1); }
+	50% { transform: scale3d(1.07, 1.07, 1.07); }
+	100% { transform: scale3d(1, 1, 1); }
 }
 
 .pulse {
-	animation-duration: 0.5s;
+	animation-duration: 300ms;
 	animation-name: throb;
+	animation-iteration-count: infinite;
 }
 
 </style>
-  <link rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+  <!-- link rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css" //-->
 
 <script src="set.js"></script>
 <script src="setgame.js"></script>

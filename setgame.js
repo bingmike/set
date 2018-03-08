@@ -9,6 +9,8 @@ February-March 2018
 TODO 
 
 FEATURE discreet options: jrdeck, hintdelay, infinite play, etc?
+	I'm thinking a gear half the size of card, always at 10,10 or so (padding, padding)
+	
 FEATURE better splash screen, icons, cards
 FEATURE highlighter looks like crap on mobile
 FEATURE highlighter is sluggish on mobile. do a zindex swap.
@@ -303,17 +305,16 @@ var SetGame = function( targetId ){
 	};
 
 	var hintOff = function( el ) {
-		el.style.visibility = "visible";
+		el.classList.remove( "pulse" );
 	};
 
 	var hintOn = function( el ) {
-		el.style.visibility = "hidden";
+		el.classList.add( "pulse" );
 	};
 
 	var resetHintTimer = function() {
 		clearInterval( hintTimer );
 		hintTimer = setInterval( function() {
-			// find the set, subtract any selectedcards, take the first one
 			var hint = getHint();
 			console.log( "HINT! Position " + hint );
 			var el = document.getElementById( "img" + hint );
@@ -321,13 +322,7 @@ var SetGame = function( targetId ){
 			hintOn(el);
 			setTimeout( function(){
 				hintOff(el);
-			}, 100 );
-			setTimeout( function(){
-				hintOn(el);
-			}, 200 );
-			setTimeout( function(){
-				hintOff(el);
-			}, 300 );
+			}, 900 ); // 3 pulses
 		}, HINTINTERVAL );
 	};
 
@@ -402,6 +397,9 @@ var SetGame = function( targetId ){
 		im.setAttribute( "height", cardHeight );
 		im.setAttribute( "class", "bounceIn" );
 		d.appendChild( im );
+		setTimeout( function() {
+			im.classList.remove( "bounceIn" );
+		}, 800 );
 
 		// animate the carddiv
 	}
