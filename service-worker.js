@@ -87,7 +87,7 @@ var filesToCache = [
   'https://bingmike.github.io/set/imgs/3trs.png',
   'https://bingmike.github.io/set/imgs/back2.png',
   'https://bingmike.github.io/set/imgs/finder2.png',
-  'https://bingmike.github.io/set/imgs/gameover.svg',
+  'https://bingmike.github.io/set/imgs/nomas.png',
   'https://bingmike.github.io/set/imgs/hilite2.gif',
   'https://bingmike.github.io/set/imgs/squiggle-icon.png',
   'https://bingmike.github.io/set/imgs/x.svg',
