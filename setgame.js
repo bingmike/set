@@ -259,7 +259,7 @@ var SetGame = function( targetId ){
 
 	var gameOverDialog = function() {
 		var im = document.createElement( "img" );
-		im.setAttribute("src",IMAGEPATH + "nomas.png");
+		im.setAttribute("src",IMAGEPATH + "nomas.svg");
 		im.setAttribute("id","gameover");
 		im.setAttribute("width", 1.5 * cardWidth );
 		im.setAttribute("height", 1.5 * cardHeight );
