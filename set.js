@@ -36,34 +36,34 @@ function SetStack() {
 	this.getSet		= setStackGetSet;
 }
 
-function setStackMakeBadDeck() { // This deal requires 2 extra rows (18 cards total) to find the 1st set. For testing.
-	this.addCard( new SetCard("3","s","g","s") ); this.addCard( new SetCard("3","s","p","s") ); this.addCard( new SetCard("2","o","p","d") );
-	this.addCard( new SetCard("1","t","g","o") ); this.addCard( new SetCard("2","s","p","s") ); this.addCard( new SetCard("3","s","g","d") );
-	this.addCard( new SetCard("1","s","g","d") ); this.addCard( new SetCard("1","t","g","d") ); this.addCard( new SetCard("1","o","p","o") );
-	this.addCard( new SetCard("2","s","r","s") ); this.addCard( new SetCard("3","t","p","o") ); this.addCard( new SetCard("3","o","g","d") );
-	this.addCard( new SetCard("3","t","r","s") ); this.addCard( new SetCard("1","s","p","d") ); this.addCard( new SetCard("1","o","r","o") );
-	this.addCard( new SetCard("3","o","g","o") ); this.addCard( new SetCard("2","s","p","d") ); this.addCard( new SetCard("1","o","p","s") );
-	this.addCard( new SetCard("2","s","r","o") ); this.addCard( new SetCard("1","t","r","o") ); this.addCard( new SetCard("3","o","p","s") );
-	this.addCard( new SetCard("1","s","p","o") ); this.addCard( new SetCard("2","s","g","s") ); this.addCard( new SetCard("3","o","r","s") );
-	this.addCard( new SetCard("2","o","g","d") ); this.addCard( new SetCard("1","s","p","s") ); this.addCard( new SetCard("1","s","g","s") );
-	this.addCard( new SetCard("1","s","r","o") ); this.addCard( new SetCard("1","t","g","s") ); this.addCard( new SetCard("3","t","g","s") );
-	this.addCard( new SetCard("1","s","g","o") ); this.addCard( new SetCard("2","t","p","o") ); this.addCard( new SetCard("2","s","p","o") );
-	this.addCard( new SetCard("3","s","r","s") ); this.addCard( new SetCard("3","s","g","o") ); this.addCard( new SetCard("2","t","p","s") );
-	this.addCard( new SetCard("1","s","r","d") ); this.addCard( new SetCard("1","t","p","o") ); this.addCard( new SetCard("1","o","g","o") );
-	this.addCard( new SetCard("3","o","r","o") ); this.addCard( new SetCard("1","t","p","s") ); this.addCard( new SetCard("3","o","g","s") );
-	this.addCard( new SetCard("1","s","r","s") ); this.addCard( new SetCard("2","t","r","d") ); this.addCard( new SetCard("3","s","p","o") );
-	this.addCard( new SetCard("3","t","g","d") ); this.addCard( new SetCard("2","t","g","o") ); this.addCard( new SetCard("3","s","r","o") );
-	this.addCard( new SetCard("2","o","r","o") ); this.addCard( new SetCard("2","s","g","d") ); this.addCard( new SetCard("3","o","r","d") );
-	this.addCard( new SetCard("3","s","r","d") ); this.addCard( new SetCard("3","t","r","o") ); this.addCard( new SetCard("2","o","p","o") );
-	this.addCard( new SetCard("1","o","g","s") ); this.addCard( new SetCard("2","s","g","o") ); this.addCard( new SetCard("2","s","r","d") );
-	this.addCard( new SetCard("3","s","p","d") ); this.addCard( new SetCard("2","t","r","o") ); this.addCard( new SetCard("2","o","g","o") );
-	this.addCard( new SetCard("3","o","p","d") ); this.addCard( new SetCard("1","o","r","d") ); this.addCard( new SetCard("3","t","p","d") );
-	this.addCard( new SetCard("2","o","g","s") ); this.addCard( new SetCard("1","o","p","d") ); this.addCard( new SetCard("2","t","p","d") );
-	this.addCard( new SetCard("1","o","r","s") ); this.addCard( new SetCard("1","t","p","d") ); this.addCard( new SetCard("1","t","r","s") );
-	this.addCard( new SetCard("1","o","g","d") ); this.addCard( new SetCard("2","t","g","d") ); this.addCard( new SetCard("3","t","r","d") );
-	this.addCard( new SetCard("2","o","r","d") ); this.addCard( new SetCard("2","t","r","s") ); this.addCard( new SetCard("1","t","r","d") );
-	this.addCard( new SetCard("3","o","p","o") ); this.addCard( new SetCard("3","t","g","o") ); this.addCard( new SetCard("2","o","r","s") );
-	this.addCard( new SetCard("2","o","p","s") ); this.addCard( new SetCard("3","t","p","s") ); this.addCard( new SetCard("2","t","g","s") );
+function setStackMakeBadDeck() { 
+	this.addCard( new SetCard( "1","o","p","o") );this.addCard( new SetCard( "1","o","p","d") );this.addCard( new SetCard( "2","t","r","s") );
+	this.addCard( new SetCard( "1","t","g","o") );this.addCard( new SetCard( "2","o","r","s") );this.addCard( new SetCard( "2","o","p","d") );
+	this.addCard( new SetCard( "3","o","r","s") );this.addCard( new SetCard( "1","t","r","s") );this.addCard( new SetCard( "2","t","g","o") );
+	this.addCard( new SetCard( "3","t","g","s") );this.addCard( new SetCard( "3","s","r","d") );this.addCard( new SetCard( "2","s","g","s") );
+	this.addCard( new SetCard( "3","t","g","d") );this.addCard( new SetCard( "1","o","r","d") );this.addCard( new SetCard( "1","t","r","d") );
+	this.addCard( new SetCard( "2","s","g","d") );this.addCard( new SetCard( "2","s","p","s") );this.addCard( new SetCard( "3","s","g","s") );
+	this.addCard( new SetCard( "2","o","r","d") );this.addCard( new SetCard( "2","o","p","s") );this.addCard( new SetCard( "2","o","r","o") );
+	this.addCard( new SetCard( "2","t","g","d") );this.addCard( new SetCard( "3","o","p","d") );this.addCard( new SetCard( "3","s","r","o") );
+	this.addCard( new SetCard( "2","s","r","d") );this.addCard( new SetCard( "3","o","p","s") );this.addCard( new SetCard( "3","o","g","o") );
+	this.addCard( new SetCard( "1","o","r","o") );this.addCard( new SetCard( "2","t","p","s") );this.addCard( new SetCard( "1","o","g","o") );
+	this.addCard( new SetCard( "3","s","g","d") );this.addCard( new SetCard( "3","t","r","s") );this.addCard( new SetCard( "2","t","g","s") );
+	this.addCard( new SetCard( "3","s","g","o") );this.addCard( new SetCard( "2","t","p","d") );this.addCard( new SetCard( "2","s","g","o") );
+	this.addCard( new SetCard( "3","t","p","o") );this.addCard( new SetCard( "3","s","r","s") );this.addCard( new SetCard( "1","o","r","s") );
+	this.addCard( new SetCard( "3","o","g","s") );this.addCard( new SetCard( "1","s","p","d") );this.addCard( new SetCard( "1","o","g","d") );
+	this.addCard( new SetCard( "1","s","r","d") );this.addCard( new SetCard( "1","o","p","s") );this.addCard( new SetCard( "1","t","p","s") );
+	this.addCard( new SetCard( "1","s","r","s") );this.addCard( new SetCard( "3","t","p","s") );this.addCard( new SetCard( "3","o","r","o") );
+	this.addCard( new SetCard( "2","o","g","d") );this.addCard( new SetCard( "1","s","g","s") );this.addCard( new SetCard( "2","t","r","d") );
+	this.addCard( new SetCard( "3","t","p","d") );this.addCard( new SetCard( "2","s","r","o") );this.addCard( new SetCard( "3","t","g","o") );
+	this.addCard( new SetCard( "3","o","r","d") );this.addCard( new SetCard( "1","o","g","s") );this.addCard( new SetCard( "1","s","g","d") );
+	this.addCard( new SetCard( "2","s","p","o") );this.addCard( new SetCard( "1","t","p","d") );this.addCard( new SetCard( "3","s","p","o") );
+	this.addCard( new SetCard( "1","t","p","o") );this.addCard( new SetCard( "1","t","r","o") );this.addCard( new SetCard( "3","o","g","d") );
+	this.addCard( new SetCard( "3","t","r","o") );this.addCard( new SetCard( "2","s","p","d") );this.addCard( new SetCard( "2","o","p","o") );
+	this.addCard( new SetCard( "2","s","r","s") );this.addCard( new SetCard( "2","t","r","o") );this.addCard( new SetCard( "2","t","p","o") );
+	this.addCard( new SetCard( "1","t","g","d") );this.addCard( new SetCard( "3","o","p","o") );this.addCard( new SetCard( "1","s","p","o") );
+	this.addCard( new SetCard( "1","t","g","s") );this.addCard( new SetCard( "1","s","g","o") );this.addCard( new SetCard( "2","o","g","s") );
+	this.addCard( new SetCard( "1","s","p","s") );this.addCard( new SetCard( "2","o","g","o") );this.addCard( new SetCard( "1","s","r","o") );
+	this.addCard( new SetCard( "3","s","p","d") );this.addCard( new SetCard( "3","t","r","d") );this.addCard( new SetCard( "3","s","p","s") );
 }
 
 function setStackCollapse() { // if the deck is empty, we can't replace the set we just removed, so do this function

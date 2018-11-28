@@ -4,7 +4,7 @@ By Mike Jordan <bingmike@gmail.com>
 
 Javascript implementation of the card game SET.
 
-February-March 2018
+February-November 2018
 ******************************************************************************
 TODO 
 
@@ -13,19 +13,22 @@ FEATURE discreet options: jrdeck, hintdelay, infinite play, etc?
 	
 FEATURE better splash screen, icons, cards
 FEATURE highlighter looks like crap on mobile
-FEATURE highlighter is sluggish on mobile. do a zindex swap.
 
 *****************************************************************************/
 
 var SetGame = function( targetId ){
-	const VERSION = "0.8";
-	const TITLE = "SET: The Family Game of Visual Perception, v" + VERSION;
+	const VERSION = "0.91";
+	const TITLE = "Solitaire SET, v" + VERSION;
 	const IMAGEPATH = "imgs/";
 	const HILITEIMG = IMAGEPATH + "hilite2.gif";
 	const REDXIMG =  IMAGEPATH + "x.svg";
-	const JUNIORDECK = false;
 	const BADDEAL = false;
 	const REDXFADE = 800;
+
+	// This should be user-configurable
+	const JUNIORDECK = false;
+	const INFINITEDECK = true;
+	const DISPLAYDETAILS = true;
 
 	var deck = null;
 	var cardsInPlay = null;
@@ -37,7 +40,14 @@ var SetGame = function( targetId ){
 	var carddivs = [];
 
 	var hintTimer = null;
-	var HINTINTERVAL = 45000;
+	var HINTINTERVAL = 60000;
+
+	var startTime = null;
+	var endTime = null;
+
+	var displayFade = null;
+
+	var numSetsFound = 0;
 
 	top.document.title = TITLE;
 	window.addEventListener("resize", onResize);
@@ -50,6 +60,13 @@ var SetGame = function( targetId ){
 	document.body.style["-moz-user-select"] = "-moz-none";
 	document.body.style["-ms-user-select"] = "none";
 	document.body.style["user-select"] = "none";;
+	document.body.style["-webkit-text-size-adjust"] = "none";
+
+	// Disable right click! For the kids that don't know how to mouse thanks to Steve Jobs.
+	// SERIOUSLY! When children play this game they right click ALL THE TIME. THIS IS BETTER.
+	document.addEventListener('contextmenu', event => event.preventDefault());
+	document.addEventListener('dragstart', event => event.preventDefault());
+	document.addEventListener('touchmove', event => event.preventDefault());
 
 	// This sets the favicon
 	var link = document.createElement('link');
@@ -103,6 +120,13 @@ var SetGame = function( targetId ){
 				r.setAttribute( "height", cardHeight );
 			}
 		});
+		var im = document.getElementById("optbutton");
+		if( im ) {
+			im.width = cardHeight / 2;
+			im.height = cardHeight / 2;
+			im.style["top"] = cardHeight / 10;
+			im.style.left = cardHeight / 10;
+		}
 	}
 
 	var showError = function() {
@@ -120,7 +144,6 @@ var SetGame = function( targetId ){
 			d.appendChild( im );
 		});
 		clearSelection();
-		ignoreInputFlag = true;
 		setTimeout( function() {
 			forEach( selectedCards, function( item, i ) {
 				var fadeOutInterval;
@@ -151,12 +174,21 @@ var SetGame = function( targetId ){
 	var clearSelection = function() {
 		forEach( selectedCards, function( item, i ) {
 			var d = document.getElementById( "hilite" + item );
-			// d.parentNode.removeChild( d );
 			d.style.visibility = "hidden";
 		});
 	};
 
 	var setWasFound = function() {
+		if( INFINITEDECK ) {
+			deck.shuffle(); // if you shuffle, then add, the set you just found won't appear in your next 3 cards
+			//deck.addCard( cardsInPlay.cards[ selectedCards[0] ] );
+			//deck.addCard( cardsInPlay.cards[ selectedCards[1] ] );
+			//deck.addCard( cardsInPlay.cards[ selectedCards[2] ] );
+			forEach( selectedCards, function( item, i ) {
+				deck.addCard( cardsInPlay.cards[ item ]);
+			});
+		}
+
 		if( deck.cardCount() > 0 && cardsInPlay.cards.length < 15 ) {
 			// replace those 3 cards in place
 			forEach( selectedCards, function(item,i) {
@@ -185,6 +217,7 @@ var SetGame = function( targetId ){
 		if( deck.cardCount() > 0 ) {
 			preloadNextThree();
 		}
+		ignoreInputFlag = false;
 	};
 
 	var removeSet = function( callback ) {
@@ -201,15 +234,44 @@ var SetGame = function( targetId ){
 		}, 330 ); // this must jibe with the timing of the "go" css class style in index.htm
 	};
 
+	var incrementCounter = function() {
+		clearTimeout( displayFade );
+		numSetsFound++;
+		if( DISPLAYDETAILS ) {
+			endTime = new Date();
+			var timeDiff = endTime - startTime;
+			timeDiff /= 1000;
+			var seconds;
+			if( timeDiff < 5 ) {
+				seconds = Math.round(  100 * timeDiff) / 100;
+			}
+			else {
+				seconds = Math.round(  10 * timeDiff) / 10;
+			}
+			var display = document.getElementById("numSetsDisplay");
+			display.innerHTML = "<span class=\"animated fadeOut\">Set #" + numSetsFound + "<br>" + seconds + " seconds" + "</span>";
+			startTime = new Date();
+			display.style.opacity = 1;
+			displayFade = setTimeout( function(){
+				var display = document.getElementById("numSetsDisplay");
+				display.innerHTML = "";
+			},4000 );
+		}
+	};
+
 	var testSelected = function() {
-		
+		// STOP ACCEPTING CLICKS HERE
+		ignoreInputFlag = true;
 		if(isSet(cardsInPlay.cards[selectedCards[0]], cardsInPlay.cards[selectedCards[1]], cardsInPlay.cards[selectedCards[2]])){
+			incrementCounter();
 			clearSelection();
 			removeSet( setWasFound );
 		}
 		else {
 			showError();
 		}
+		// START ACCEPTING CLICKS HERE
+		// ignoreInputFlag = false;
 	};
 
 	var preloadNextThree = function() {
@@ -259,7 +321,7 @@ var SetGame = function( targetId ){
 
 	var gameOverDialog = function() {
 		var im = document.createElement( "img" );
-		im.setAttribute("src",IMAGEPATH + "nomas.svg");
+		im.setAttribute("src",IMAGEPATH + "gameover.svg");
 		im.setAttribute("id","gameover");
 		im.setAttribute("width", 1.5 * cardWidth );
 		im.setAttribute("height", 1.5 * cardHeight );
@@ -279,6 +341,7 @@ var SetGame = function( targetId ){
 		};
 		im.ondblclick = im.onclick;
 		document.body.appendChild( im );
+		numSetsFound = 0;
 	};
 	
 	var checkForGameOver = function() {
@@ -316,13 +379,13 @@ var SetGame = function( targetId ){
 		clearInterval( hintTimer );
 		hintTimer = setInterval( function() {
 			var hint = getHint();
-			console.log( "HINT! Position " + hint );
+			// console.log( "HINT! Position " + hint );
 			var el = document.getElementById( "img" + hint );
 			// apply the pulse animation class and setTimeout to remove the class
 			hintOn(el);
 			setTimeout( function(){
 				hintOff(el);
-			}, 900 ); // 3 pulses
+			}, 903 ); // 3 pulses
 		}, HINTINTERVAL );
 	};
 
@@ -404,6 +467,10 @@ var SetGame = function( targetId ){
 		// animate the carddiv
 	}
 
+	var options = function() {
+		alert( "Display options here." );
+	};
+
 	function updateDisplay() {
 		for( var i = 0; i < 21; i++ ) {
 			var d = document.getElementById( "card" + i );
@@ -427,6 +494,29 @@ var SetGame = function( targetId ){
 	var felt = document.createElement("div");
 	felt.id = "felt";
 	stage.appendChild(felt);
+
+	// options button
+	// var im = document.createElement("img");
+	// im.setAttribute("src", IMAGEPATH + "gear.svg");
+	// im.setAttribute("id","optbutton");
+	// im.style.position = "absolute";
+	// im.onclick = function(){
+	// 	options();
+	// };
+	// felt.appendChild( im );
+
+	// numSetsFound Display
+	var d1 = document.createElement("div");
+	d1.setAttribute("id", "numSetsDisplay" );
+	d1.style.position = "absolute";
+	d1.style.left = 10;
+	d1.style["top"] = 10;
+	d1.style.color = "white";
+	d1.style.zIndex = "99";
+	d1.style.textShadow = "2px 2px 2px #000000";
+	d1.style.fontFamily = "Arial,Helvetica,sans-serif";
+	d1.style.fontSize = "20px";
+	felt.appendChild( d1 );
 
 	// reserve an area for caching images
 	var d = document.createElement( "div" );
@@ -469,5 +559,6 @@ var SetGame = function( targetId ){
 	}
 	newGame();
 	onResize();
+	startTime = new Date();
 };
 

@@ -1,11 +1,18 @@
 <html>
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
+
+  #gearoverlay {
+  position: absolute;
+  bottom: 7;
+  right: 7;
+  }
 
 .go {
   /*animation-duration: 0.2s;*/
   /*animation-name: slideout;*/
-	/* You also need to change a parameter in the removeSet function, around line 226 in the js */
+	/* You also need to change a parameter in the removeSet function, around line 220 in the js */
 	transition: transform 330ms;
 	transform: translate(0px, 1620px);
 }
@@ -118,14 +125,35 @@ body {
 }
 
 .pulse {
-	animation-duration: 300ms;
+	animation-duration: 800ms;
 	animation-name: throb;
 	animation-iteration-count: infinite;
 }
 
+        .animated {
+            -webkit-animation-duration: 4s;animation-duration: 4s;
+            -webkit-animation-fill-mode: both;animation-fill-mode: both;
+         }
+         
+         @-webkit-keyframes fadeOut {
+            0% {opacity: 0; transform:scale(0);}
+            10% {opacity: 1; transform:scale(1);}
+            80% {opacity: 1; transform:scale(1);}
+            100% {opacity: 0; transform:scale(0);}
+         }
+         
+         @keyframes fadeOut {
+            0% {opacity: 0; transform:scale(0)}
+            10% {opacity: 1; transform:scale(1)}
+            80% {opacity: 1; transform:scale(1)}
+            100% {opacity: 0; transform:scale(0)}
+         }
+         
+         .fadeOut {
+            -webkit-animation-name: fadeOut;
+            animation-name: fadeOut;
+         }
 </style>
-  <!-- link rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css" //-->
 
 <script src="set.js"></script>
 <script src="setgame.js"></script>
@@ -155,16 +183,16 @@ if ('serviceWorker' in navigator) {
 
 ready(loaded);
 </script>
-<link rel="manifest" href="/set/manifest.json">
+<link rel="manifest" href="/manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="SET">
-  <link rel="apple-touch-icon" href="/set/imgs/icon-152x152.png">
-<meta name="msapplication-TileImage" content="/set/imgs/icon-144x144.png">
+  <link rel="apple-touch-icon" href="imgs/icon-152x152.png">
+  <meta name="msapplication-TileImage" content="imgs/icon-144x144.png">
   <meta name="msapplication-TileColor" content="#006000">
 </head>
 <body bgcolor="#006000">
 <div id="stage"></div>
+<!-- div id="gearoverlay"><img width=30 height=30 src="imgs/gear.svg"></div //-->
 </body>
 </html>
-
