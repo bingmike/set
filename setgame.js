@@ -4,31 +4,48 @@ By Mike Jordan <bingmike@gmail.com>
 
 Javascript implementation of the card game SET.
 
-February-November 2018
+February 2018 - December 2018
 ******************************************************************************
 TODO 
 
-FEATURE discreet options: jrdeck, hintdelay, infinite play, etc?
-	I'm thinking a gear half the size of card, always at 10,10 or so (padding, padding)
-	
-FEATURE better splash screen, icons, cards
-FEATURE highlighter looks like crap on mobile
+FEATURE better splash screen, icons
+
+FEATURE stats should include lifetime versions, junior versions, Hints received, Best 3-Set time (the dream)
+
+BUG Sarah says no more cards ("gameover.svg") should say no more SETS
+
+TRY how would the selector look if we changed it's bg to a gradient. Perhaps radial, but maybe not.
+
+TRY to see if this works on an iPhone. I have my doubts about transitions
 
 *****************************************************************************/
 
 var SetGame = function( targetId ){
-	const VERSION = "0.91";
-	const TITLE = "Solitaire SET, v" + VERSION;
+	const VERSION = "20181210.1925";
+	const TITLE = "Solitaire v" + VERSION;
 	const IMAGEPATH = "imgs/";
-	const HILITEIMG = IMAGEPATH + "hilite2.gif";
 	const REDXIMG =  IMAGEPATH + "x.svg";
 	const BADDEAL = false;
-	const REDXFADE = 800;
+	const REDXFADE = 400; // was 800 for the longest time
+	const SELECTEDBG = "#FFFF70";
 
-	// This should be user-configurable
-	const JUNIORDECK = false;
-	const INFINITEDECK = true;
-	const DISPLAYDETAILS = true;
+	var JUNIORDECK = null;
+	var cookie = getCookie("optJunior");
+	JUNIORDECK = (cookie == "true");
+
+	var INFINITEDECK = null;
+	cookie = getCookie("optInfinite");
+	INFINITEDECK = (cookie == "true");
+	if( cookie == "" ) INFINITEDECK = true;
+
+	var DISPLAYDETAILS = null;
+	cookie = getCookie( "optVerbose" );
+	DISPLAYDETAILS = ( cookie == "true" );
+
+	var HINTS = null;
+	cookie = getCookie( "optHints" );
+	HINTS = (cookie == "true");
+	if( cookie == "" ) HINTS = true;
 
 	var deck = null;
 	var cardsInPlay = null;
@@ -40,15 +57,19 @@ var SetGame = function( targetId ){
 	var carddivs = [];
 
 	var hintTimer = null;
-	var HINTINTERVAL = 60000;
+	var HINTINTERVAL = 30000;
 
 	var startTime = null;
 	var endTime = null;
+	var startPause = null;
+	var endPause = null;
+	var totalTime = null;
 
 	var displayFade = null;
 
 	var numSetsFound = 0;
-
+	var bestTime = Number.POSITIVE_INFINITY;
+	
 	top.document.title = TITLE;
 	window.addEventListener("resize", onResize);
 
@@ -62,13 +83,14 @@ var SetGame = function( targetId ){
 	document.body.style["user-select"] = "none";;
 	document.body.style["-webkit-text-size-adjust"] = "none";
 
-	// Disable right click! For the kids that don't know how to mouse thanks to Steve Jobs.
+	// Disable right click!
 	// SERIOUSLY! When children play this game they right click ALL THE TIME. THIS IS BETTER.
 	document.addEventListener('contextmenu', event => event.preventDefault());
-	document.addEventListener('dragstart', event => event.preventDefault());
+	// document.addEventListener('dragstart', event => event.preventDefault());
+	
 	document.addEventListener('touchmove', event => event.preventDefault());
 
-	// This sets the favicon
+	// Set the favicon
 	var link = document.createElement('link');
 	link.type = 'image/x-icon';
 	link.rel = 'shortcut icon';
@@ -109,24 +131,12 @@ var SetGame = function( targetId ){
 			}
 		}
 		forEach( selectedCards, function( item, i ) {
-			var h = document.getElementById("hilite"+item);
 			var r = document.getElementById("redx"+item);
-			if( h ) { // they might be redxs or flying away or something
-				h.setAttribute( "width", cardWidth );
-				h.setAttribute( "height", cardHeight );
-			}
 			if( r ) {
 				r.setAttribute( "width", cardWidth );
 				r.setAttribute( "height", cardHeight );
 			}
 		});
-		var im = document.getElementById("optbutton");
-		if( im ) {
-			im.width = cardHeight / 2;
-			im.height = cardHeight / 2;
-			im.style["top"] = cardHeight / 10;
-			im.style.left = cardHeight / 10;
-		}
 	}
 
 	var showError = function() {
@@ -141,6 +151,7 @@ var SetGame = function( targetId ){
 			im.style.position = "absolute";
 			im.style.left = 0;
 			im.style["top"] = 0;
+			im.ondblclick = null;
 			d.appendChild( im );
 		});
 		clearSelection();
@@ -173,17 +184,14 @@ var SetGame = function( targetId ){
 
 	var clearSelection = function() {
 		forEach( selectedCards, function( item, i ) {
-			var d = document.getElementById( "hilite" + item );
-			d.style.visibility = "hidden";
+			var ibg = document.getElementById("img"+item+"bg");
+			ibg.style.fill = "#fff";
 		});
 	};
 
 	var setWasFound = function() {
 		if( INFINITEDECK ) {
-			deck.shuffle(); // if you shuffle, then add, the set you just found won't appear in your next 3 cards
-			//deck.addCard( cardsInPlay.cards[ selectedCards[0] ] );
-			//deck.addCard( cardsInPlay.cards[ selectedCards[1] ] );
-			//deck.addCard( cardsInPlay.cards[ selectedCards[2] ] );
+			deck.shuffle();
 			forEach( selectedCards, function( item, i ) {
 				deck.addCard( cardsInPlay.cards[ item ]);
 			});
@@ -202,7 +210,7 @@ var SetGame = function( targetId ){
 				cardsInPlay.cards[item] = null;
 			});			
 			cardsInPlay.collapse();
-			updateDisplay(); // only place we are calling this function
+			updateDisplay();
 			onResize();
 		}
 		selectedCards = [];
@@ -214,32 +222,35 @@ var SetGame = function( targetId ){
 			onResize();
 		}
 		checkForGameOver();
-		if( deck.cardCount() > 0 ) {
-			preloadNextThree();
-		}
+
+		console.log( cardsInPlay.getSetCount() + " set" + ( ( cardsInPlay.getSetCount() > 1 ) ? "s" : "" ) + " available" );
 		ignoreInputFlag = false;
 	};
 
 	var removeSet = function( callback ) {
 		forEach( selectedCards, function( item, i ) {
 			var im = document.getElementById( "img" + item );
+			// im.classList.remove("duck");
+			//im.classList.add("go");
 			im.classList.add("go");
 		});
 		setTimeout( function() {
 			forEach( selectedCards, function( item, i ) {
 				var im = document.getElementById( "img" + item );
+				// im.classList.remove("go");
 				im.classList.remove("go");
 			});
 			callback();
-		}, 330 ); // this must jibe with the timing of the "go" css class style in index.htm
+		}, 195 ); // this must jibe with the timing of the css exit-animation class style in set.css
 	};
 
 	var incrementCounter = function() {
 		clearTimeout( displayFade );
 		numSetsFound++;
-		if( DISPLAYDETAILS ) {
-			endTime = new Date();
-			var timeDiff = endTime - startTime;
+		var s = document.getElementById( "statsSetsFound" );
+		s.innerHTML = numSetsFound;
+			endTime = Date.now();
+			var timeDiff = ( endTime - startTime );
 			timeDiff /= 1000;
 			var seconds;
 			if( timeDiff < 5 ) {
@@ -248,15 +259,30 @@ var SetGame = function( targetId ){
 			else {
 				seconds = Math.round(  10 * timeDiff) / 10;
 			}
+			if( seconds < bestTime ) {
+				bestTime = seconds;
+				var s = document.getElementById( "statsBestTime" );
+				s.innerHTML = bestTime + " seconds"
+			}
+			var avgTime = ( endTime - totalTime ) / ( 1000 * numSetsFound );
+			avgTime = Math.round( 10 * avgTime ) / 10;
+			document.getElementById( "statsAverageTime" ).innerHTML = avgTime + " seconds";
+
+			var info = "<span class=\"animated fadeOut\">Set #" + numSetsFound + "<br>" + seconds + " seconds";
+			info += "<br><br><span style=\"font-size:16px;\">Best time: " + bestTime + " seconds<br>";
+			info += "Average time: " + avgTime + " seconds<br>";
+			info += "<span id=\"setsAvailable\"></span><br>";
+			info += "</span></span>";
 			var display = document.getElementById("numSetsDisplay");
-			display.innerHTML = "<span class=\"animated fadeOut\">Set #" + numSetsFound + "<br>" + seconds + " seconds" + "</span>";
-			startTime = new Date();
-			display.style.opacity = 1;
-			displayFade = setTimeout( function(){
-				var display = document.getElementById("numSetsDisplay");
-				display.innerHTML = "";
-			},4000 );
-		}
+			startTime = Date.now();
+			if( DISPLAYDETAILS ) {
+				display.innerHTML = info;
+				display.style.opacity = 1;
+				displayFade = setTimeout( function(){
+					var display = document.getElementById("numSetsDisplay");
+					display.innerHTML = "";
+				},4000 );
+			}
 	};
 
 	var testSelected = function() {
@@ -270,23 +296,16 @@ var SetGame = function( targetId ){
 		else {
 			showError();
 		}
-		// START ACCEPTING CLICKS HERE
-		// ignoreInputFlag = false;
-	};
-
-	var preloadNextThree = function() {
-		// delete the previous cached images
-		var cache = document.getElementById("cache");
-		cache.innerHTML = "";
-		for( var i = 0; i < 3; i++ ) {
-			var im = document.createElement( "img" );   
-			im.setAttribute( "src", IMAGEPATH + (deck.cards[i]).imgsrc );
-			im.style.display = "none";
-			document.getElementById("cache").appendChild( im );
-		}
+		// START ACCEPTING CLICKS HERE: Better to do it when removeSet is done and when showError is done
 	};
 
 	var newGame = function() {
+		if( INFINITEDECK ) {
+			numSetsFound = 0;
+			bestTime = Number.POSITIVE_INFINITY;
+			startTime = Date.now();
+			totalTime = startTime;
+		}
 		deck = new SetStack();
 		if( BADDEAL ) {
 			deck.makebaddeck();
@@ -314,9 +333,11 @@ var SetGame = function( targetId ){
 			}
 			onResize();
 		}
-		preloadNextThree();
+
+		// preloadNextThree();
 		ignoreInputFlag = false;
 		resetHintTimer();
+		console.log( cardsInPlay.getSetCount() + " set" + ( ( cardsInPlay.getSetCount() > 1 ) ? "s" : "" ) + " available" );
 	};
 
 	var gameOverDialog = function() {
@@ -328,26 +349,27 @@ var SetGame = function( targetId ){
 		im.style.position = "absolute";
 		im.style["top"] = "50%";
 		im.style.left = "50%";
-		im.style.zIndex = "5";
+		im.style.zIndex = 2;
 		im.style["-moz-transform"] = "translateX(-50%) translateY(-50%)";
 		im.style["-webkit-transform"] = "translateX(-50%) translateY(-50%)";
 		im.style["transform"] = "translateX(-50%) translateY(-50%)";
-		im.onclick = function() {
+		im.onclick = function( e ) {
 			var d = document.getElementById("gameover");
 			d.parentNode.removeChild( d );	
 			ignoreInputFlag = false;
 			newGame();
 			onResize();
+				var evt = e ? e:window.event;
+				evt.stopPropagation();
 		};
 		im.ondblclick = im.onclick;
-		document.body.appendChild( im );
-		numSetsFound = 0;
+		document.getElementById("stage").appendChild( im );
 	};
 	
 	var checkForGameOver = function() {
 		if( ! cardsInPlay.hasSet() && deck.cardCount() == 0 ) {
 			ignoreInputFlag = true;
-			setTimeout( gameOverDialog, 900 );
+			setTimeout( gameOverDialog, 700 );
 		}
 	};
 
@@ -359,7 +381,7 @@ var SetGame = function( targetId ){
 		// get a set of indices that would make a set
 		var c = cardsInPlay.getSet();
 
-		// subtract the indices in selectedcards
+		// subtract the indices in selectedcards (Don't hint a card that is already selected)
 		forEach( selectedCards, function( item, i ) {
 			c = c.diff( [ parseInt( item ) ] );	
 		});
@@ -368,24 +390,26 @@ var SetGame = function( targetId ){
 	};
 
 	var hintOff = function( el ) {
-		el.classList.remove( "pulse" );
+		el.classList.remove( "shake" );
+		el.style.zIndex = 1;
 	};
 
 	var hintOn = function( el ) {
-		el.classList.add( "pulse" );
+		el.classList.add( "shake" );
+		el.style.zIndex = 3;
 	};
 
 	var resetHintTimer = function() {
 		clearInterval( hintTimer );
 		hintTimer = setInterval( function() {
-			var hint = getHint();
-			// console.log( "HINT! Position " + hint );
-			var el = document.getElementById( "img" + hint );
-			// apply the pulse animation class and setTimeout to remove the class
-			hintOn(el);
-			setTimeout( function(){
-				hintOff(el);
-			}, 903 ); // 3 pulses
+			if( HINTS && selectedCards.length == 0 ) {
+				var hint = getHint();
+				var el = document.getElementById( "img" + hint );
+				el = el.parentNode;
+				// apply the pulse animation class and setTimeout to remove the class
+				hintOn(el);
+				// setTimeout( function(){ hintOff(el); }, 750 );
+			}
 		}, HINTINTERVAL );
 	};
 
@@ -394,40 +418,37 @@ var SetGame = function( targetId ){
 		if( ignoreInputFlag ) {
 			return;
 		}
+		for( var i = 0; i < 21; i++ ) {
+			var el = document.getElementById( "img" + i );
+			if( el )hintOff( el.parentNode );
+		}
 		var id = idee.substring(4,idee.length);
+		var ix = document.getElementById( "img" + id );
+		ix = ix.parentNode; // whoops. fixed it.
+		ix.classList.add( "duck" );
+		setTimeout( function(){
+			ix.classList.remove( "duck" );
+		}, 100 );
+
 		if( ! ( id < cardsInPlay.cardCount() ) ) return;
 		var i = selectedCards.indexOf( id ); 
 		if( -1 == i ) {
 			// not selected. select it
 			selectedCards.push( id );
-			var d = carddivs[id];
-			var im = document.getElementById( "hilite" + id );
-			if( im ) {
-				im.style.visibility = "visible";
-			}
-			else {
-				im = document.createElement( "img" );
-				im.setAttribute( "src", HILITEIMG );
-				im.setAttribute( "draggable", "false" );
-				im.setAttribute( "id", "hilite"+id );
-				im.setAttribute( "width", cardWidth );
-				im.setAttribute( "height", cardHeight );
-				im.style.position = "absolute";
-				im.style.left = 0;
-				im.style["top"] = 0;
-				d.appendChild( im );
-			}
+			var i = document.getElementById( "img" + id );
+			hintOff( i );
+			var ibg = document.getElementById( "img" + id + "bg" );
+			ibg.style.fill = SELECTEDBG;
 			if( selectedCards.length == 3 ) testSelected();
 		} else {
 			// is selected. deselect it
 			selectedCards.splice( i, 1 );
-			var d = document.getElementById( "hilite" + id );
-			// d.parentNode.removeChild( d );
-			d.style.visibility = "hidden";
+			var ibg = document.getElementById( "img" + id + "bg" );
+			ibg.style.fill = "#fff";
 		}
 	};
 
-	function getWindowHeight() { // we really want the height of the parent container "targetId"
+	function getWindowHeight() { 
 		var w = window,
 		    d = document,
 		    e = d.documentElement,
@@ -438,127 +459,191 @@ var SetGame = function( targetId ){
 	function getWindowWidth() {
 		var w = window,
 		    d = document,
-	    e = d.documentElement,
-	    g = d.getElementsByTagName('body')[0];
-	    return ( w.innerWidth || e.clientWidth || g.clientWidth);
+		    e = d.documentElement,
+		    g = d.getElementsByTagName('body')[0];
+		    return ( w.innerWidth || e.clientWidth || g.clientWidth);
 	}
 	
 	function updateCard( i ) {
-		// animation: first we need to save carddiv current location
 		var d = carddivs[i];
 		d.innerHTML = "";
-		var saveTop = d.style["top"];
-		var saveLeft = d.style.left;
 
 		// give it the card
-		var im = document.createElement( "img" );
-		im.setAttribute( "src", IMAGEPATH + (cardsInPlay.cards[i]).imgsrc );
-		im.setAttribute( "id", "img" + i);
+		draw_stuff( d, (cardsInPlay.cards[i]).code, "img" + i );
+		var im = document.getElementById( "img" + i );
 		im.setAttribute( "draggable", "false" );
-		im.style.position = "absolute";
-		im.setAttribute( "width", cardWidth );
-		im.setAttribute( "height", cardHeight );
-		im.setAttribute( "class", "bounceIn" );
-		d.appendChild( im );
-		setTimeout( function() {
-			im.classList.remove( "bounceIn" );
-		}, 800 );
-
-		// animate the carddiv
+		im.classList.add( "entranceAnim" );
 	}
 
 	var options = function() {
-		alert( "Display options here." );
+		var now = Date.now();
+		var sec = Math.floor((now - totalTime)/1000);
+		var hrs = Math.floor(sec / 3600);
+		var min = Math.floor((sec - (hrs * 3600)) / 60);
+		var seconds = sec - (hrs * 3600) - (min * 60);
+           
+		var result = (hrs < 10 ? "0" + hrs : hrs);
+		result += ":" + (min < 10 ? "0" + min : min);
+		result += ":" + (seconds < 10 ? "0" + seconds : seconds);	
+		document.getElementById( "statsTotalTime" ).innerHTML = result;
+
+		document.getElementById( "optJunior" ).checked = JUNIORDECK;
+		document.getElementById( "optInfinite" ).checked = INFINITEDECK;
+		document.getElementById( "optVerbose" ).checked = DISPLAYDETAILS;
+		document.getElementById( "optHints" ).checked = HINTS;
+
+		document.getElementById('myModal').style.display = "block";
+		startPause = now;
 	};
 
 	function updateDisplay() {
 		for( var i = 0; i < 21; i++ ) {
 			var d = document.getElementById( "card" + i );
+			d.innerHTML = "";
 			if( i < cardsInPlay.cardCount() ) {
-				var im = document.createElement( "img" );
-				im.setAttribute( "src", IMAGEPATH + (cardsInPlay.cards[i]).imgsrc );
-				im.setAttribute( "id", "img" + i);
+				draw_stuff( d, (cardsInPlay.cards[i]).code, "img" + i );
+				var im = document.getElementById( "img" + i );
 				im.setAttribute( "draggable", "false" );
-				im.setAttribute( "width", cardWidth );
-				im.setAttribute( "height", cardHeight );
-				d.innerHTML = "";
-				d.appendChild( im );
-			}
-			else {
-				d.innerHTML = "";
 			}
 		}
 	}
+
+function setCookie(cname, cvalue, exdays) {
+	var d = new Date();
+	d.setTime(d.getTime() + (exdays*24*60*60*1000));
+	var expires = "expires="+ d.toUTCString();
+	document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function getCookie(cname) {
+	var name = cname + "=";
+	var decodedCookie = decodeURIComponent(document.cookie);
+	var ca = decodedCookie.split(';');
+	for(var i = 0; i <ca.length; i++) {
+		var c = ca[i];
+		while (c.charAt(0) == ' ') {
+			c = c.substring(1);
+		}
+		if (c.indexOf(name) == 0) {
+			return c.substring(name.length, c.length);
+		}
+	}
+	return "";
+}
+
 	
+	// Get the modal (Our options/stats/about screen)
+	var modal = document.getElementById('myModal');
+
+	// Get the <span> element that closes the modal
+	var span = document.getElementsByClassName("close")[0];
+
+	// When the user clicks on <span> (x), close the modal
+	span.onclick = function() {
+		var oldJ = JUNIORDECK;
+		var oldI = INFINITEDECK;
+		// write checkbox option settings to variables
+		var c1 = document.getElementById( "optJunior" );
+		JUNIORDECK = c1.checked;
+		var c2 = document.getElementById( "optInfinite" );
+		INFINITEDECK = c2.checked;
+		var c3 = document.getElementById( "optVerbose" );
+		DISPLAYDETAILS = c3.checked;
+		var c4 = document.getElementById("optHints");
+		HINTS = c4.checked;
+		// clear any existing hints
+		for( var i = 0; i < 21; i++ ) {
+			var el = document.getElementById( "img" + i );
+			if( el )hintOff( el.parentNode );
+		}
+		setCookie( "optJunior", JUNIORDECK, 365 );
+		setCookie( "optInfinite", INFINITEDECK, 365 );
+		setCookie( "optVerbose", DISPLAYDETAILS, 365 );
+		setCookie( "optHints", HINTS, 365 );
+		
+		endPause = Date.now();
+		resetHintTimer();
+		startTime = startTime + ( endPause - startPause );
+		totalTime = totalTime + ( endPause - startPause );
+		modal.style.display = "none";
+		if( ( JUNIORDECK != oldJ ) || ( oldI != INFINITEDECK ) ) {
+			var d = document.getElementById("gameover");
+			if( d ) d.parentNode.removeChild( d );	
+			ignoreInputFlag = false;
+			newGame();
+			onResize();
+		}
+	}
+
+	window.onclick = function(event) {
+		if (event.target == modal) {
+			document.getElementsByClassName("close")[0].onclick();
+		}
+	}
+
 	var stage = document.getElementById(targetId);
-	var felt = document.createElement("div");
-	felt.id = "felt";
-	stage.appendChild(felt);
+	stage.style.position = "fixed";
+	stage.style.width = "100%";
+	stage.style.height = "100%";
+	stage.style.zIndex = 0;
+	// stage.onclick = function(e) {
+	stage.onmousedown = function(e) {
+		// Sarah was ALWAYS clicking in between the cards, and getting frustrated at the
+		// options dialog popping up and ruining her flow
+		var padding = 5;
+		var left = parseInt( document.getElementById("card0").style.left ) - padding;
+		var right = parseInt( document.getElementById("card2").style.left ) + cardWidth + padding;
+		var bottom = parseInt( document.getElementById("card0").style["top"] ) + cardHeight + padding;
+		var topx = parseInt( document.getElementById("card" + ( cardsInPlay.cardCount() - 1 ) ).style["top"] ) - padding;
+		
+		if(( e.x >= left) && (e.x <= right ) && (e.y >= topx) && ( e.y <= bottom ) ) return;
+		options();
+	};
 
-	// options button
-	// var im = document.createElement("img");
-	// im.setAttribute("src", IMAGEPATH + "gear.svg");
-	// im.setAttribute("id","optbutton");
-	// im.style.position = "absolute";
-	// im.onclick = function(){
-	// 	options();
-	// };
-	// felt.appendChild( im );
+	var d = document.createElement("div");
+	d.id = "numSetsDisplay";
+	d.style.position = "absolute";
+	d.style.left = 10;
+	d.style.top = 10;
+	d.style.color = "white";
+	d.style.zIndex = 6;
+	d.style.textShadow = "2px 2px 2px #000000";
+	d.style.fontFamily = "Arial,Helvetica,sans-serif";
+	d.style.fontSize = "20px";
+	stage.appendChild( d );
 
-	// numSetsFound Display
-	var d1 = document.createElement("div");
-	d1.setAttribute("id", "numSetsDisplay" );
-	d1.style.position = "absolute";
-	d1.style.left = 10;
-	d1.style["top"] = 10;
-	d1.style.color = "white";
-	d1.style.zIndex = "99";
-	d1.style.textShadow = "2px 2px 2px #000000";
-	d1.style.fontFamily = "Arial,Helvetica,sans-serif";
-	d1.style.fontSize = "20px";
-	felt.appendChild( d1 );
-
-	// reserve an area for caching images
-	var d = document.createElement( "div" );
-	d.setAttribute("id","cache");
-	d.style.display = "none";
-	felt.appendChild( d );
-	
-	// force these 2 images to always be cached by keeping them in the DOM, hidden
+	// force this image to always be cached by keeping it in the DOM, hidden
+	// Even better would be to generate it here with svg.js assistance
+	// Better still to do it with native js code.
 	var i = document.createElement( "img" );
-	i.setAttribute("src", HILITEIMG);
+	// i.setAttribute("src", REDXIMG);
+	i.src =REDXIMG;
 	i.style.display = "none";
-	felt.appendChild( i );
-	i = document.createElement( "img" );
-	i.setAttribute("src", REDXIMG);
-	i.style.display = "none";
-	felt.appendChild( i );
+	stage.appendChild( i );
 
 	for( var i = 0; i < 7; i++ ) {
 		for( var j = 0; j < 3; j++ ) {
 			var d = document.createElement( "div" );
 			d.id = "card" + (3*i+j);
-			d.onmousedown = function() {
+			// d.onclick = function(e) {
+			d.onmousedown = function(e) {
 				cardClick(this.id);
+				var evt = e ? e:window.event;
+				evt.stopPropagation();
 			};
+			d.ondragstart = d.onclick;
 			d.style.position = "absolute"; 
 			d.style.zIndex = "2";
-			felt.appendChild( d );
+			stage.appendChild( d );
 			carddivs.push( d );
-
-			var im = document.createElement( "img" );
-			im.setAttribute( "src", HILITEIMG );
-			im.setAttribute( "draggable", "false" );
-			im.setAttribute( "id", "hilite"+(3*i+j) );
-			im.style.position = "absolute";
-			im.style.visibility = "hidden";
-			im.style.left = 0;
-			im.style["top"] = 0;
-			d.appendChild( im );
 		}
 	}
+	numSetsFound = 0;
+	bestTime = Number.POSITIVE_INFINITY;
+	startTime = Date.now();
+	totalTime = startTime;
 	newGame();
 	onResize();
-	startTime = new Date();
+	stage.style.zIndex = 0;
 };
 

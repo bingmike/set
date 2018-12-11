@@ -12,9 +12,10 @@ function SetCard( number, shading, color, shape ) {
 	this.shading	= shading;
 	this.color	= color;
 	this.shape	= shape;
-	this.toString	= setCardToString
-	this.getSet	= setCardGetSet
+	this.toString	= setCardToString;
+	this.getSet	= setCardGetSet;
 	this.imgsrc	= this.number + this.shading + this.color + this.shape + ".png";
+	this.code	= this.number + this.shading + this.color + this.shape;
 }
 
 function SetStack() {

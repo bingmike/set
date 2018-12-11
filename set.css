@@ -1,0 +1,154 @@
+body {
+	overflow: hidden;
+	margin: 0px;
+}
+
+div:empty {
+	display: none;
+}
+
+input[type='checkbox'] {
+	-webkit-appearance:none;
+	width: 30px;
+	height: 30px;
+	vertical-align: middle;
+	border-radius:5px;
+	border:2px solid #555;
+	margin-right: 8px;
+}
+
+input[type='checkbox']:checked {
+	background-color: #222;
+	text-decoration: bold;
+}
+
+.modal {
+	display: none;
+	position: fixed;
+	z-index: 3;
+	padding-top: 50px;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	overflow: auto;
+	background-color: rgb(0,96,0);
+}
+
+.modal-content {
+	background-color: #fefefe;
+	margin: auto;
+	padding: 20px;
+	border: 1px solid #888;
+	width: 80%;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+.close {
+	color: #aaaaaa;
+	float: right;
+	font-size: 28px;
+	font-weight: bold;
+}
+
+.close:hover, .close:focus {
+	color: #000;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.go {
+	transition: transform 195ms;
+	transform: translate(0px, 1620px);
+}
+
+@keyframes dip {
+	0% { transform: scale3d(1, 1, 1); }
+	2% { transform: scale3d(0.95, 0.95, 0.95); }
+	100% { transform: scale3d(1, 1, 1); }
+}
+
+.duck {
+	-webkit-animation-name: dip;
+	animation-name: dip;
+	animation-duration: 100ms;
+	animation-iteration-count: 1;
+}
+
+.fadeOut {
+	-webkit-animation-name: fadeOut;
+	animation-name: fadeOut;
+	animation-duration: 4000ms;
+ }
+
+.shake {
+	animation-name: shake;
+	animation-duration: 200ms;
+	animation-iteration-count: infinite;
+	animation-timing-function: ease;
+}
+
+.entranceAnim {
+	-webkit-animation-name: bounceInDown;
+	animation-name: bounceInDown;
+	animation-duration: 200ms;
+	animation-iteration-count: 1;
+}
+
+@keyframes shake {
+	from, to {
+		transform: translate3d(0, 0, 0);
+	}
+	30% {
+		transform: translate3d(-2%, 0, 0);
+	}
+	70% {
+		transform: translate3d(2%, 0, 0);
+	}
+}
+
+@keyframes fadeOut {
+	0% {opacity: 0; transform:scale(0)}
+	10% {opacity: 1; transform:scale(1)}
+	85% {opacity: 1; transform:scale(1)}
+	100% {opacity: 0; transform:scale(0)}
+}
+         
+@keyframes bounceInDown {
+  from,
+  60%,
+  75%,
+  90%,
+  to {
+    -webkit-animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+  }
+
+  0% {
+    opacity: 0;
+    -webkit-transform: translate3d(0, -3000px, 0);
+    transform: translate3d(0, -3000px, 0);
+  }
+
+  60% {
+    opacity: 1;
+    -webkit-transform: translate3d(0, 25px, 0);
+    transform: translate3d(0, 25px, 0);
+  }
+
+  75% {
+    -webkit-transform: translate3d(0, -10px, 0);
+    transform: translate3d(0, -10px, 0);
+  }
+
+  90% {
+    -webkit-transform: translate3d(0, 5px, 0);
+    transform: translate3d(0, 5px, 0);
+  }
+
+  to {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+}
+

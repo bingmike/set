@@ -1,162 +1,14 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="stylesheet" type="text/css" href="set.css">
 <style>
-
-  #gearoverlay {
-  position: absolute;
-  bottom: 7;
-  right: 7;
-  }
-
-.go {
-  /*animation-duration: 0.2s;*/
-  /*animation-name: slideout;*/
-	/* You also need to change a parameter in the removeSet function, around line 220 in the js */
-	transition: transform 330ms;
-	transform: translate(0px, 1620px);
-}
-
-@-webkit-keyframes bounceIn {
-  from,
-  20%,
-  40%,
-  60%,
-  80%,
-  to {
-    -webkit-animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
-    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
-  }
-
-  0% {
-    opacity: 0;
-    -webkit-transform: scale3d(0.3, 0.3, 0.3);
-    transform: scale3d(0.3, 0.3, 0.3);
-  }
-
-  20% {
-    -webkit-transform: scale3d(1.1, 1.1, 1.1);
-    transform: scale3d(1.1, 1.1, 1.1);
-  }
-
-  40% {
-    -webkit-transform: scale3d(0.9, 0.9, 0.9);
-    transform: scale3d(0.9, 0.9, 0.9);
-  }
-
-  60% {
-    opacity: 1;
-    -webkit-transform: scale3d(1.03, 1.03, 1.03);
-    transform: scale3d(1.03, 1.03, 1.03);
-  }
-
-  80% {
-    -webkit-transform: scale3d(0.97, 0.97, 0.97);
-    transform: scale3d(0.97, 0.97, 0.97);
-  }
-
-  to {
-    opacity: 1;
-    -webkit-transform: scale3d(1, 1, 1);
-    transform: scale3d(1, 1, 1);
-  }
-}
-
-@keyframes bounceIn {
-  from,
-  20%,
-  40%,
-  60%,
-  80%,
-  to {
-    -webkit-animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
-    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
-  }
-
-  0% {
-    opacity: 0;
-    -webkit-transform: scale3d(0.3, 0.3, 0.3);
-    transform: scale3d(0.3, 0.3, 0.3);
-  }
-
-  20% {
-    -webkit-transform: scale3d(1.1, 1.1, 1.1);
-    transform: scale3d(1.1, 1.1, 1.1);
-  }
-
-  40% {
-    -webkit-transform: scale3d(0.9, 0.9, 0.9);
-    transform: scale3d(0.9, 0.9, 0.9);
-  }
-
-  60% {
-    opacity: 1;
-    -webkit-transform: scale3d(1.03, 1.03, 1.03);
-    transform: scale3d(1.03, 1.03, 1.03);
-  }
-
-  80% {
-    -webkit-transform: scale3d(0.97, 0.97, 0.97);
-    transform: scale3d(0.97, 0.97, 0.97);
-  }
-
-  to {
-    opacity: 1;
-    -webkit-transform: scale3d(1, 1, 1);
-    transform: scale3d(1, 1, 1);
-  }
-}
-
-.bounceIn {
-  -webkit-animation-duration: 0.75s;
-  animation-duration: 0.75s;
-  -webkit-animation-name: bounceIn;
-  animation-name: bounceIn;
-}
-
-body {
-	overflow: hidden;
-}
-
-@keyframes throb {
-	0% { transform: scale3d(1, 1, 1); }
-	50% { transform: scale3d(1.07, 1.07, 1.07); }
-	100% { transform: scale3d(1, 1, 1); }
-}
-
-.pulse {
-	animation-duration: 800ms;
-	animation-name: throb;
-	animation-iteration-count: infinite;
-}
-
-        .animated {
-            -webkit-animation-duration: 4s;animation-duration: 4s;
-            -webkit-animation-fill-mode: both;animation-fill-mode: both;
-         }
-         
-         @-webkit-keyframes fadeOut {
-            0% {opacity: 0; transform:scale(0);}
-            10% {opacity: 1; transform:scale(1);}
-            80% {opacity: 1; transform:scale(1);}
-            100% {opacity: 0; transform:scale(0);}
-         }
-         
-         @keyframes fadeOut {
-            0% {opacity: 0; transform:scale(0)}
-            10% {opacity: 1; transform:scale(1)}
-            80% {opacity: 1; transform:scale(1)}
-            100% {opacity: 0; transform:scale(0)}
-         }
-         
-         .fadeOut {
-            -webkit-animation-name: fadeOut;
-            animation-name: fadeOut;
-         }
 </style>
 
 <script src="set.js"></script>
 <script src="setgame.js"></script>
+<script src="svg.min.js"></script>
+<script src="setsvg.js"></script>
 <script>
 function ready(fn) {
 	if (document.readyState != 'loading'){
@@ -193,6 +45,35 @@ ready(loaded);
 </head>
 <body bgcolor="#006000">
 <div id="stage"></div>
-<!-- div id="gearoverlay"><img width=30 height=30 src="imgs/gear.svg"></div //-->
+<div id="myModal" class="modal">
+	<div class="modal-content">
+		<span class="close">&times;</span>
+		<h3>STATS</h3>
+		<p>
+			Sets found: <span id="statsSetsFound">0</span><br>
+			Best time: <span id="statsBestTime">&infin;</span><br>
+			Average time: <span id="statsAverageTime">&infin;</span><br>
+			Time elapsed: <span id="statsTotalTime"></span> (paused)
+		</p>
+		<hr>
+
+		<h3>OPTIONS</h3>
+		<p>
+			<input onclick="this.blur()" id="optJunior" type=checkbox></input>JUNIOR: for toddlers and babies mostly<br>
+			<input onclick="this.blur()" id="optInfinite" type=checkbox></input>INFINITE: never run out of cards<br>
+			<input onclick="this.blur()" id="optVerbose" type=checkbox></input>VERBOSE: see stats after each set</br>
+			<input onclick="this.blur()" id="optHints" type=checkbox></input>HINTS: a little help when you get stuck
+		</p>
+		<hr>
+
+		<h3>ABOUT</h3>
+		<p>
+			The <a href="https://setgame.com">best games on the planet</a> come from Fountain Hills, Arizona.
+		</p>
+		<p>
+			<i>Special thanks to Sarah Jordan!</i>
+		</p>
+	</div>
+</div>
 </body>
 </html>
