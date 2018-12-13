@@ -5,7 +5,6 @@ var filesToCache = [
   'setgame.js',
   'set.css',
   'setsvg.js',
-  'svg.min.js',
   'imgs/gameover.svg',
   'imgs/squiggle-icon.png',
   'imgs/x.svg',
