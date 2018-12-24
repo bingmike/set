@@ -443,7 +443,8 @@ function process( transcript ) {
 	};
 
 	var voiceClick = function(code) {
-		//cardClick("card9");
+		// YOU NEED TO JUST RETURN IF THE OPTIONS WINDOW IS OPEN ELSE YOU SCREW UP STATS
+		if( document.getElementById('myModal').style.display == "block" ) return;
 		for( var i = 0; i < cardsInPlay.cardCount(); i++ ) {
 			if( cardsInPlay.cards[i].code == code ) cardClick("card"+i);
 		}
