@@ -1,27 +1,15 @@
 /*****************************************************************************\
-setgame.js
-By Mike Jordan <bingmike@gmail.com>
-
-Javascript implementation of the card game SET.
-
-February 2018 - December 2018
-******************************************************************************
-TODO 
-
-FEATURE better splash screen, icons
-
-FEATURE stats should include lifetime versions, junior versions, Hints received, Best 3-Set time (the dream)
-
-BUG Sarah says no more cards ("gameover.svg") should say no more SETS
-
-TRY how would the selector look if we changed it's bg to a gradient. Perhaps radial, but maybe not.
-
-TRY to see if this works on an iPhone. I have my doubts about transitions
-
-*****************************************************************************/
+* setgame.js
+* By Mike Jordan <bingmike@gmail.com>
+* 
+* Javascript implementation of the card game SET.
+* 
+* February 2018 - December 2018
+*
+\****************************************************************************/
 
 var SetGame = function( targetId ){
-	const VERSION = "20181210.1925";
+	const VERSION = "20181223.2055";
 	const TITLE = "Solitaire v" + VERSION;
 	const IMAGEPATH = "imgs/";
 	const REDXIMG =  IMAGEPATH + "x.svg";
@@ -73,6 +61,35 @@ var SetGame = function( targetId ){
 	top.document.title = TITLE;
 	window.addEventListener("resize", onResize);
 
+window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = new SpeechRecognition();
+recognition.interimResults = false;
+
+recognition.addEventListener('result', e => {
+  const transcript = Array.from(e.results).map(result => result[0]).map(result => result.transcript).join('');
+  if (e.results[0].isFinal) {
+	process( transcript );
+  }
+})
+
+function process( transcript ) {
+	let was = transcript;
+	transcript = transcript.toLowerCase();
+	transcript = transcript.replace(/one |1 /,"1").replace(/two |too |2 |to /,"2").replace(/three |3 /, "3");
+	transcript = transcript.replace("solid ","s").replace("striped ", "t").replace("open ", "o");
+	transcript = transcript.replace("red ","r").replace("green ", "g").replace("purple ", "p");
+	transcript = transcript.replace(/ovals|oval/,"o").replace(/squiggles|squiggle/,"s").replace(/diamonds|diamond|dimonds|dimond/,"d");
+	if( transcript.length != 4 ) {
+		transcript = "(nothing)";
+	}
+	else {
+		voiceClick( transcript );
+	}
+}
+
+recognition.addEventListener('end', recognition.start);
+
+recognition.start();
 	// This prevents the selection of elements in most browsers
 	document.body.style["-webkit-touch-callout"] = "none";
 	document.body.style["-webkit-user-select"] = "none";
@@ -411,6 +428,13 @@ var SetGame = function( targetId ){
 				// setTimeout( function(){ hintOff(el); }, 750 );
 			}
 		}, HINTINTERVAL );
+	};
+
+	var voiceClick = function(code) {
+		//cardClick("card9");
+		for( var i = 0; i < cardsInPlay.cardCount(); i++ ) {
+			if( cardsInPlay.cards[i].code == code ) cardClick("card"+i);
+		}
 	};
 
 	var cardClick = function(idee) {
