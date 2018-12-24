@@ -2,7 +2,7 @@
 * setgame.js
 * By Mike Jordan <bingmike@gmail.com>
 * 
-* Javascript implementation of the card game SET.
+* Javascript implementation of the card game SET!
 * 
 * February 2018 - December 2018
 *
