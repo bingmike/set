@@ -71,16 +71,21 @@ window.addEventListener('keyup', (e) => {
 	voiceClick( kcode );
 });
 
-window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-const recognition = new SpeechRecognition();
-recognition.interimResults = false;
+function playByVoice() {
+	window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+	const recognition = new SpeechRecognition();
+	recognition.interimResults = false;
 
-recognition.addEventListener('result', e => {
-  const transcript = Array.from(e.results).map(result => result[0]).map(result => result.transcript).join('');
-  if (e.results[0].isFinal) {
-	process( transcript );
-  }
-})
+	recognition.addEventListener('result', e => {
+	  const transcript = Array.from(e.results).map(result => result[0]).map(result => result.transcript).join('');
+	  if (e.results[0].isFinal) {
+		process( transcript );
+	  }
+	})
+	recognition.addEventListener('end', recognition.start);
+
+	recognition.start();
+}
 
 function process( transcript ) {
 	let was = transcript;
@@ -97,9 +102,6 @@ function process( transcript ) {
 	}
 }
 
-recognition.addEventListener('end', recognition.start);
-
-recognition.start();
 	// This prevents the selection of elements in most browsers
 	document.body.style["-webkit-touch-callout"] = "none";
 	document.body.style["-webkit-user-select"] = "none";
@@ -571,6 +573,10 @@ function getCookie(cname) {
 
 	// Get the <span> element that closes the modal
 	var span = document.getElementsByClassName("close")[0];
+
+	// play by voice option
+	var mic = document.getElementById("mic");
+	mic.onclick = playByVoice;
 
 	// When the user clicks on <span> (x), close the modal
 	span.onclick = function() {
