@@ -61,6 +61,16 @@ var SetGame = function( targetId ){
 	top.document.title = TITLE;
 	window.addEventListener("resize", onResize);
 
+const pressed = [];
+
+window.addEventListener('keyup', (e) => {  
+	// The pressed array will hold the last four keys pressed
+	pressed.push(e.key);
+	pressed.splice( -5, pressed.length - 4);
+	let kcode = pressed.join("");
+	voiceClick( kcode );
+});
+
 window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const recognition = new SpeechRecognition();
 recognition.interimResults = false;
