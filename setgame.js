@@ -14,7 +14,7 @@ var SetGame = function( targetId ){
 	const IMAGEPATH = "imgs/";
 	const REDXIMG =  IMAGEPATH + "x.svg";
 	const BADDEAL = false;
-	const REDXFADE = 400; // was 800 for the longest time
+	const REDXFADE = 400;
 	const SELECTEDBG = "#FFFF70";
 
 	var JUNIORDECK = null;
@@ -57,6 +57,17 @@ var SetGame = function( targetId ){
 
 	var numSetsFound = 0;
 	var bestTime = Number.POSITIVE_INFINITY;
+	var stats = {
+		setsFound: 0,
+		bestTime: Number.POSITIVE_INFINITY,
+		timeElapsed: 0,
+		best3: Number.POSITIVE_INFINITY,
+		best5: Number.POSITIVE_INFINITY,
+		best10: Number.POSITIVE_INFINITY,
+		best27: Number.POSITIVE_INFINITY,
+		best100: Number.POSITIVE_INFINITY,
+		times: [],
+	};
 	
 	top.document.title = TITLE;
 	window.addEventListener("resize", onResize);
@@ -71,9 +82,15 @@ window.addEventListener('keyup', (e) => {
 	voiceClick( kcode );
 });
 
+var recognition;
+
+function cancelVoice() {
+	if( recognition ) recognition.abort();
+}
+
 function playByVoice() {
 	window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-	const recognition = new SpeechRecognition();
+	recognition = new SpeechRecognition();
 	recognition.interimResults = false;
 
 	recognition.addEventListener('result', e => {
@@ -273,6 +290,28 @@ function process( transcript ) {
 		}, 195 ); // this must jibe with the timing of the css exit-animation class style in set.css
 	};
 
+	const process_time = function( newtime ) {
+		// all times processed as milliseconds	
+		if( newtime < stats.bestTime ) stats.bestTime = newtime;
+		stats["timeElapsed"] += newtime;
+		stats["setsFound"]++;
+		// stats["averageTime"] = stats.timeElapsed / stats.setsFound;
+		stats.times.push( newtime );
+		if( stats.times.length > 100 ) stats.times.shift();
+		for( let B of [ 3, 5, 10, 27, 100 ] ) {
+			if( stats.times.length >= B ) {
+				let sum = 0;
+				for( let i = 1; i <= B; i++ ){
+					sum += stats.times[ stats.times.length - i ];
+				}
+				if( sum < stats["best" + B] ) {
+					// HEY BUD, YOU GOT A NEW BEST TIME!
+					stats["best" + B] = sum;
+				}
+			}
+		}
+	};
+
 	var incrementCounter = function() {
 		clearTimeout( displayFade );
 		numSetsFound++;
@@ -280,25 +319,18 @@ function process( transcript ) {
 		s.innerHTML = numSetsFound;
 			endTime = Date.now();
 			var timeDiff = ( endTime - startTime );
-			timeDiff /= 1000;
-			var seconds;
-			if( timeDiff < 5 ) {
-				seconds = Math.round(  100 * timeDiff) / 100;
-			}
-			else {
-				seconds = Math.round(  10 * timeDiff) / 10;
-			}
-			if( seconds < bestTime ) {
-				bestTime = seconds;
-				var s = document.getElementById( "statsBestTime" );
-				s.innerHTML = bestTime + " seconds"
-			}
-			var avgTime = ( endTime - totalTime ) / ( 1000 * numSetsFound );
-			avgTime = Math.round( 10 * avgTime ) / 10;
+			process_time( timeDiff );
+			console.log( stats );
+			var seconds = timeDiff / 1000;
+			var s = document.getElementById( "statsBestTime" );
+			s.innerHTML = parseFloat( stats["bestTime"] / 1000 ) + " seconds"
+			// var avgTime = ( endTime - totalTime ) / ( 1000 * numSetsFound );
+			var avgTime = parseFloat( stats["timeElapsed"] ) / parseInt( stats["setsFound"] ); // ( endTime - totalTime ) / ( 1000 * numSetsFound );
+			avgTime = Math.round( 10 * avgTime / 1000 ) / 10;
 			document.getElementById( "statsAverageTime" ).innerHTML = avgTime + " seconds";
 
-			var info = "<span class=\"animated fadeOut\">Set #" + numSetsFound + "<br>" + seconds + " seconds";
-			info += "<br><br><span style=\"font-size:16px;\">Best time: " + bestTime + " seconds<br>";
+			var info = "<span class=\"animated fadeOut\">Set #" + stats["setsFound"] + "<br>" + seconds + " seconds";
+			info += "<br><br><span style=\"font-size:16px;\">Best time: " + parseFloat( stats["bestTime"] / 1000 ) + " seconds<br>";
 			info += "Average time: " + avgTime + " seconds<br>";
 			info += "<span id=\"setsAvailable\"></span><br>";
 			info += "</span></span>";
@@ -576,8 +608,8 @@ function getCookie(cname) {
 	var span = document.getElementsByClassName("close")[0];
 
 	// play by voice option
-	var mic = document.getElementById("mic");
-	mic.onclick = playByVoice;
+	// var mic = document.getElementById("mic");
+	// mic.onclick = playByVoice;
 
 	// When the user clicks on <span> (x), close the modal
 	span.onclick = function() {
@@ -592,6 +624,13 @@ function getCookie(cname) {
 		DISPLAYDETAILS = c3.checked;
 		var c4 = document.getElementById("optHints");
 		HINTS = c4.checked;
+		var c5 = document.getElementById("optVoice");
+		if( c5.checked ) {
+			playByVoice();
+		}
+		else {
+			cancelVoice();
+		}
 		// clear any existing hints
 		for( var i = 0; i < 21; i++ ) {
 			var el = document.getElementById( "img" + i );
