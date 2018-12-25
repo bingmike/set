@@ -82,15 +82,8 @@ window.addEventListener('keyup', (e) => {
 	voiceClick( kcode );
 });
 
-var recognition;
-
-function cancelVoice() {
-	if( recognition ) recognition.abort();
-}
-
-function playByVoice() {
 	window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-	recognition = new SpeechRecognition();
+	const recognition = new SpeechRecognition();
 	recognition.interimResults = false;
 
 	recognition.addEventListener('result', e => {
@@ -99,8 +92,16 @@ function playByVoice() {
 		process( transcript );
 	  }
 	})
-	recognition.addEventListener('end', recognition.start);
 
+function cancelVoice() {
+	if( recognition ) {
+		recognition.removeEventListener('end', recognition.start);
+		recognition.abort();
+	}
+}
+
+function playByVoice() {
+	recognition.addEventListener('end', recognition.start);
 	recognition.start();
 }
 
