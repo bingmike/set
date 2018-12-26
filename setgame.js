@@ -68,6 +68,15 @@ var SetGame = function( targetId ){
 		best100: Number.POSITIVE_INFINITY,
 		times: [],
 	};
+	cookie = getCookie( "setsFound" );
+	if( cookie != "" ) stats.setsFound = parseInt(cookie);
+	cookie = getCookie( "bestTime" );
+	if( cookie != "" ) stats.bestTime = parseInt(cookie);
+	cookie = getCookie( "timeElapsed" );
+	if( cookie != "" ) stats.timeElapsed = parseInt(cookie);
+	cookie = getCookie( "best3" );
+	if( cookie != "" ) stats.best3 = parseInt(cookie);
+	
 	
 	top.document.title = TITLE;
 	window.addEventListener("resize", onResize);
@@ -94,6 +103,7 @@ window.addEventListener('keyup', (e) => {
 	})
 
 function cancelVoice() {
+	console.log( "voice off" );
 	if( recognition ) {
 		recognition.removeEventListener('end', recognition.start);
 		recognition.abort();
@@ -101,6 +111,7 @@ function cancelVoice() {
 }
 
 function playByVoice() {
+	console.log( "voice on" );
 	recognition.addEventListener('end', recognition.start);
 	recognition.start();
 }
@@ -293,9 +304,14 @@ function process( transcript ) {
 
 	const process_time = function( newtime ) {
 		// all times processed as milliseconds	
-		if( newtime < stats.bestTime ) stats.bestTime = newtime;
+		if( newtime < stats.bestTime ) {
+			stats.bestTime = newtime;
+			setCookie( "bestTime", newtime, 365 );
+		}
 		stats["timeElapsed"] += newtime;
+		setCookie( "timeElapsed", stats.timeElapsed, 365 );
 		stats["setsFound"]++;
+		setCookie( "setsFound", stats.setsFound, 365 );
 		// stats["averageTime"] = stats.timeElapsed / stats.setsFound;
 		stats.times.push( newtime );
 		if( stats.times.length > 100 ) stats.times.shift();
@@ -308,6 +324,8 @@ function process( transcript ) {
 				if( sum < stats["best" + B] ) {
 					// HEY BUD, YOU GOT A NEW BEST TIME!
 					stats["best" + B] = sum;
+					let s = document.getElementById( "statsBest" + B );
+					s.innerHTML = Number( sum / 1000 ).toFixed( 2 ) + " seconds";
 				}
 			}
 		}
@@ -327,7 +345,7 @@ function process( transcript ) {
 			s.innerHTML = parseFloat( stats["bestTime"] / 1000 ) + " seconds"
 			// var avgTime = ( endTime - totalTime ) / ( 1000 * numSetsFound );
 			var avgTime = parseFloat( stats["timeElapsed"] ) / parseInt( stats["setsFound"] ); // ( endTime - totalTime ) / ( 1000 * numSetsFound );
-			avgTime = Math.round( 10 * avgTime / 1000 ) / 10;
+			avgTime = Math.round( 100 * avgTime / 1000 ) / 100;
 			document.getElementById( "statsAverageTime" ).innerHTML = avgTime + " seconds";
 
 			var info = "<span class=\"animated fadeOut\">Set #" + stats["setsFound"] + "<br>" + seconds + " seconds";
