@@ -68,6 +68,7 @@ var SetGame = function( targetId ){
 		best100: Number.POSITIVE_INFINITY,
 		times: [],
 	};
+/*
 	cookie = getCookie( "setsFound" );
 	if( cookie != "" ) stats.setsFound = parseInt(cookie);
 	cookie = getCookie( "bestTime" );
@@ -76,7 +77,7 @@ var SetGame = function( targetId ){
 	if( cookie != "" ) stats.timeElapsed = parseInt(cookie);
 	cookie = getCookie( "best3" );
 	if( cookie != "" ) stats.best3 = parseInt(cookie);
-	
+*/	
 	
 	top.document.title = TITLE;
 	window.addEventListener("resize", onResize);
@@ -643,6 +644,7 @@ function getCookie(cname) {
 		DISPLAYDETAILS = c3.checked;
 		var c4 = document.getElementById("optHints");
 		HINTS = c4.checked;
+/*
 		var c5 = document.getElementById("optVoice");
 		if( c5.checked ) {
 			playByVoice();
@@ -650,6 +652,7 @@ function getCookie(cname) {
 		else {
 			cancelVoice();
 		}
+*/
 		// clear any existing hints
 		for( var i = 0; i < 21; i++ ) {
 			var el = document.getElementById( "img" + i );
