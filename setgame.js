@@ -9,7 +9,7 @@
 \****************************************************************************/
 
 var SetGame = function( targetId ){
-	const VERSION = "20181223.2055";
+	const VERSION = "20181227.1043";
 	const TITLE = "Solitaire v" + VERSION;
 	const IMAGEPATH = "imgs/";
 	const REDXIMG =  IMAGEPATH + "x.svg";
