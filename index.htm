@@ -309,11 +309,16 @@ svg.selected {
 
 .hint {
 	z-index: 3;
-	animation-name: hint;
-/* Keep this short in duration */
+	animation-name: pulse;
 	animation-duration: 800ms;
 	animation-iteration-count: infinite;
-	animation-timing-function: "ease-in-out";
+	animation-timing-function: ease-in-out;
+}
+
+@keyframes pulse {
+	0% { transform: scale3d(1,1,1); }
+	50% { transform: scale3d(1.05,1.05,1.05); }
+	100% { transform:  scale3d(1,1,1); }
 }
 
 @keyframes hint {
