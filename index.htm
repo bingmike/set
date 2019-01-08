@@ -32,16 +32,14 @@ itself could provide some sort of [decor? bling?] when the player has a good tim
 Background could change color based on how your average time is trending
 Or it could breifly turn gold when you log a new best time. OR something.
 
-What if anything else can a service-worker do?
-
 PREFS BUTTON BUGLY BUG: If you bring up prefs by clicking right where the close button X appears, the same touch event
 will immediately close prefs. This almost doesn't matter at all to me.
 
 Background could be a canvas element with all kinds of possibilities. Just something to ponder.
 
-You could use your beautiful graphics and animations to put together a tutorial for how to play Set.
+What if anything else can a service-worker do? Just something to ponder.
 
-My notes are so chaotic. There's got to be a better way.
+You could use your beautiful graphics and animations to put together a tutorial for how to play Set.
 
 If you click on a hinted element, the hint class is immediately removed, even if it's in mid-animation.
 It would be better if an animated element waited until the animation was complete before it was removed.
@@ -52,18 +50,13 @@ TODO STILL: better hint. rubber band? 3D flip! 3D flip! 3D flip!
 STILL TODO: The squiggle makes the nice-enough spin fugly. When you click a hinted card. It should grow immediately instead of
 wating for the end of the animation cycle. Or else LOSE THE GROW EFFECT ALTOGETHER.
 Changed hint to a pulse. Now waiting for iteration makes the trnsition look worse. Ugh. Need better hints. 1, 2, then a persistent 3.
-
-If you pull up preferences screen while gameover anim is going, its ugly and bad
-UPDATE: we already have the variable gameOverLoop. If if't not null, the game is not over. That was easy.
-
-The highlight color FFFF66 is jarringly bright on mobile.
-UPDATE: FFFF99 is acceptable.
+TODO: Progressive Hinting, with the third one on an infinite loop. For now: swing, tada, pulse. Wow that didn't work well at all.
 
 *Hint delay rangle slider should not be seen if hintsbox is unchecked. 
 A good interface doesn't offer elements that don't work. This may seem purely cosmetic, but this
 kind of detail separates rinky-dinky from real-deal.
 UPDATE: It doesn't, but there's no grace to it. No animation because no jQuery to make it easy.
-UPDATE: I addded a fade-in class and applied it
+UPDATE: I addded a fade-in class and applied it. Pretty rinkydink.
 
 *1**************************************************************************************************/
 input[type=range] {
@@ -315,9 +308,39 @@ svg.selected {
 	100% { transform:  scale3d(1,1,1); }
 }
 
-@keyframes hint {
+@keyframes spin {
 	0% { transform: rotate(0deg); }
 	100% { transform: rotate(180deg); }
+}
+
+@keyframes swing {
+	20% { transform: rotate3d(0, 0, 1, 15deg); } 
+	40% { transform: rotate3d(0, 0, 1, -10deg); } 
+	60% { transform: rotate3d(0, 0, 1, 5deg); } 
+	80% { transform: rotate3d(0, 0, 1, -5deg); } 
+	100% { transform: rotate3d(0, 0, 1, 0deg); }
+}
+
+.swing {
+	transform-origin: top center;
+	animation-name: swing;
+	animation-duration: 1000ms;
+	animation-iteration-count: 1;
+	animation-timing-function: ease-in-out;
+}
+
+@keyframes tada {
+	0% { transform: scale3d(1, 1, 1); } 
+	10%, 20% { transform: scale3d(0.9, 0.9, 0.9) rotate3d(0, 0, 1, -3deg); } 
+	30%, 50%, 70%, 90% { transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, 3deg); } 
+	40%, 60%, 80% { transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, -3deg); } 
+	100% { transform: scale3d(1, 1, 1); }
+}
+
+.tada {
+	animation-name: tada;
+	animation-duration: 1000ms;
+	animation-iteration-count: 1;
 }
 
 		</style>
@@ -452,9 +475,9 @@ function cancelHintTimer() {
 function applyHint() {
 	if( ! prefs.hints ) return;
 	if( selected.length ) return;
-	hintCandidate.classList.add( "hint" );
 	stats.hints++;
 	localStorage.setItem('stats', JSON.stringify(stats));
+	hintCandidate.classList.add("hint");
 }
 
 function clearHintAnim(e) {
@@ -463,9 +486,12 @@ function clearHintAnim(e) {
 
 function clearHint() {
 	const hinted = container.querySelector(".hint");
+	if(hinted)hinted.classList.remove("hint");
+/*
 	if( hinted ) { // This is where I used one-time event listeners for the very first time. Also the animationiteration event! I learned about it at css-tricks.com.
 		hinted.addEventListener( "animationiteration", clearHintAnim, { once: true } );
 	}
+*/
 }
 
 function addRow(){
