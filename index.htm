@@ -6,12 +6,9 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 		<style>
 /***************************************************************************************************
-This is another crack at implementing Set in web app form.
+This is a crack at implementing Set in web app form.
 
 TODO:
-
-SQUIGGLE PATH BUG: Your squiggle path needs radial symmetry and simplicity. It is a bug that your squiggle is bugged up looking.
-This is one of my top two concerns right now.
 
 SLICKEN: Options controls can and must be completely customized. Stock HTML form elements are ugly and do not promote trust
 The range slider is bothering me in particular.
@@ -23,18 +20,19 @@ SLICKEN: Cards should have a 3D appearance for some animations. Exploit those 3D
 entrance animation could have a little more jiggle
 beautify animations
 MAKE THE HINT A 3D rotation on the x axis or Y axis.
+Also, you should use a generic card back and get rid of the proprietary art
 
 *if we can restore a game state, we should, else initialize
 change on load from init to whatever. in whatever, try to load a deck and a hand and continue a game, else THEN just initialize
-But why? Is this something I need?
+But why? Is this something I need? 
+NO! This will just make it super easy to cheat your times. Never ever do this. Unless you scramble the hand before displaying.
 
 Process_time *could* return something if the time it logged was a particularly good one. Or the function
 itself could provide some sort of [decor? bling?] when the player has a good time acheivement.
 Background could change color based on how your average time is trending
 Or it could breifly turn gold when you log a new best time. OR something.
 
-You need a MANIFEST and some art and beautify those elements. I think gameplay is fucking on. mj 1/4/19
-You also need a service worker but are there more things to learn about them first?
+What if anything else can a service-worker do?
 
 PREFS BUTTON BUGLY BUG: If you bring up prefs by clicking right where the close button X appears, the same touch event
 will immediately close prefs. This almost doesn't matter at all to me.
@@ -53,12 +51,7 @@ UPDATE: did that, but quickly felt I needed to shorten the hint animation loop (
 TODO STILL: better hint. rubber band? 3D flip! 3D flip! 3D flip!
 STILL TODO: The squiggle makes the nice-enough spin fugly. When you click a hinted card. It should grow immediately instead of
 wating for the end of the animation cycle. Or else LOSE THE GROW EFFECT ALTOGETHER.
-
-Embed a more interetsing font? Or reference? One optimized for tiny sizes?
-UPDATE: WOW what adifference! So beautiful.
-
-I wrote a monkeyFingers function and setInterval. It currently makes cards vanish. WTF. TO > 200, fine. TO = 160: breaks things
-UPDATE: I fixed this. Monkeyfingers can run with timeout of 5. Forever. 720,000 monkey clicks per hour.
+Changed hint to a pulse. Now waiting for iteration makes the trnsition look worse. Ugh. Need better hints. 1, 2, then a persistent 3.
 
 If you pull up preferences screen while gameover anim is going, its ugly and bad
 UPDATE: we already have the variable gameOverLoop. If if't not null, the game is not over. That was easy.
@@ -652,7 +645,7 @@ necessary def nodes for creating SET cards
 	}
 	else { // Squiggle
 		path = SQUIGGLE;
-		offset = 72;
+		offset = 74;
 		pathid = "squiggle";
 	}
 	var poly = document.createElementNS(svgns, "path");
@@ -1055,13 +1048,7 @@ function updateDisplayedRange(e) {
 }
 
 function beautifyMS( milliseconds ) {
-	neg = "";
-	if( milliseconds < 0 ) {
-		neg = "-";
-		milliseconds *= -1;
-		// throw new Error( "Out of range exception: milliseconds must be positive" );
-	}
-	let ret = neg;
+	let ret = "";
 	var day, hour, minute, seconds, milis;
 	seconds = Math.floor(milliseconds / 1000);
 	minute = Math.floor(seconds / 60);
@@ -1079,21 +1066,6 @@ function beautifyMS( milliseconds ) {
 	else if( seconds )ret += seconds + " second" + ((seconds==1)?(""):("s")) + ", ";
 	return ret.substr(0,ret.length-2); // strip ", "
 }
-
-
-function monkeyFingers() {
-	if( freezeInput ) return;
-	let items = container.querySelectorAll(".item");
-	if( items.length ) {
-		let item = items[ Math.floor( Math.random() * items.length ) ];
-		let svg = item.querySelector("svg");
-		if( svg ) {
-			let code = svg.id.substr(3,7);
-			toggleSelect( code );
-		}
-	}
-}
-// setInterval( monkeyFingers, 5 );
 
 if ('serviceWorker' in navigator) {
 	navigator.serviceWorker
