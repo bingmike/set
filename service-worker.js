@@ -1,6 +1,8 @@
 var cacheName = 'setcache';
 var filesToCache = [
-  'index.htm'
+	'index.htm',
+	'TUZyzwprpvBS1izr_vOECuSf.woff2',
+	'z7NFdQDnbTkabZAIOl9il_O6KJj73e7Ff1GhDuXMRw.woff2'
 ];
 
 self.addEventListener('install', function(e) {
