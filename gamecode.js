@@ -649,7 +649,6 @@ function stats2html() {
 function toggleOptions( e ) {
 	if( gameOverLoop != null ) return;
 	if( container.style.display == "none" ){ // Take user BACK TO GAME
-		resetHintTimer();
 		let oj = prefs.juniordeck;
 		let oi = prefs.infinity;
 		options.forEach( option => {
@@ -657,6 +656,7 @@ function toggleOptions( e ) {
 		});
 		prefs.hintdelay = hintdelay.value;
 		localStorage.setItem('prefs', JSON.stringify(prefs));
+		resetHintTimer();
 		container.style.display = "grid";
 		preferences.style.display = "none";
 		startTime += ( Date.now() - startPause );
