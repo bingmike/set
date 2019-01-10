@@ -395,15 +395,8 @@ function showError() {
 			const el = document.getElementById("svg"+i);
 			if( el ) el.classList.remove("tremble");
 		});
-	},300);
-	
+	},300);	
 	return;
-/*
-	document.body.style.backgroundColor = RED;
-	setTimeout(function(){
-		document.body.style.backgroundColor = "darkgreen";
-	},200);
-*/
 }
 
 function collapseHand(){
@@ -622,7 +615,7 @@ function stats2html() {
 	}
 
 	const statsspan = document.getElementById("statsspan");
-	let html = "Total Sets found: <b>" + numberWithCommas( stats.setsFound ) + "</b><br>";
+	let html = "Sets found: <b>" + numberWithCommas( stats.setsFound ) + "</b><br>";
 	html += "Junior Sets found: <b>" + numberWithCommas( stats.setsFoundJr ) + "</b><br>";
 	html += "Hints received: <b>" + stats.hints + "</b><br>";
 	html += "Best time: <b>" + n(stats.bestTime) + "</b><br>";
@@ -642,7 +635,7 @@ function stats2html() {
 	if( stats.times.length > 99 )
 	html += "Best time, 100 set avg: <b>" + n(stats.best100/100) + "</b><br>";
 	if( stats.times )
-	html += "Total time logged: <b>" + beautifyMS(stats.timeElapsed ) + "</b><br>"; 
+	html += "Time logged: <b>" + beautifyMS(stats.timeElapsed ) + "</b><br>"; 
 	statsspan.innerHTML = html;
 }
 
