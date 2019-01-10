@@ -1,10 +1,12 @@
+<!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>set</title>
+		<title>Set</title>
 		<link rel="manifest" href="manifest.json">
 		<link rel="shortcut icon" type="image/png" href="favicon.png">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 		<meta name="theme-color" content="#006000">
+		<meta name="Description" content="How to play: click or touch cards to select. Select three cards that form a Set.">
 		<style>
 /***************************************************************************************************
 This is a crack at implementing Set in web app form.
@@ -22,11 +24,6 @@ entrance animation could have a little more jiggle
 beautify animations
 MAKE THE HINT A 3D rotation on the x axis or Y axis.
 Also, you should use a generic card back and get rid of the proprietary art
-
-*if we can restore a game state, we should, else initialize
-change on load from init to whatever. in whatever, try to load a deck and a hand and continue a game, else THEN just initialize
-But why? Is this something I need? 
-NO! This will just make it super easy to cheat your times. Never ever do this. Unless you scramble the hand before displaying.
 
 Process_time *could* return something if the time it logged was a particularly good one. Or the function
 itself could provide some sort of [decor? bling?] when the player has a good time acheivement.
