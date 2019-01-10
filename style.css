@@ -1,0 +1,283 @@
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  margin: 9px 0;
+}
+input[type=range]:focus {
+  outline: none;
+}
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 2px;
+  cursor: pointer;
+  box-shadow: 1px 1px 1px #000000;
+  background: #dfdfdf;
+  border-radius: 1px;
+  border: 0.2px solid #010101;
+}
+input[type=range]::-webkit-slider-thumb {
+  box-shadow: 1px 1px 2px #000000;
+  border: 0.6px solid #303030;
+  height: 20px;
+  width: 20px;
+  border-radius: 10px;
+  background: #e6e6e6;
+  cursor: pointer;
+  -webkit-appearance: none;
+  margin-top: -9.2px;
+}
+input[type=range]:focus::-webkit-slider-runnable-track {
+  background: #ececec;
+}
+input[type=range]::-moz-range-track {
+  width: 100%;
+  height: 2px;
+  cursor: pointer;
+  box-shadow: 1px 1px 1px #000000;
+  background: #dfdfdf;
+  border-radius: 1px;
+  border: 0.2px solid #010101;
+}
+input[type=range]::-moz-range-thumb {
+  box-shadow: 1px 1px 1px #000000;
+  border: 1px solid #000000;
+  height: 20px;
+  width: 20px;
+  border-radius: 10px;
+  background: #e6e6e6;
+  cursor: pointer;
+}
+
+.fade-in {
+	opacity: 1;
+	animation-name: fadeInOpacity;
+	animation-iteration-count: 1;
+	animation-timing-function: ease-in;
+	animation-duration: 200ms;
+}
+
+@keyframes fadeInOpacity {
+	0% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 1;
+	}
+}
+
+@font-face {
+  font-family: 'Amatic SC';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Amatic SC Regular'), local('AmaticSC-Regular'), url(TUZyzwprpvBS1izr_vOECuSf.woff2), url(https://fonts.gstatic.com/s/amaticsc/v11/TUZyzwprpvBS1izr_vOECuSf.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Open Sans Condensed';
+  font-style: normal;
+  font-weight: 300;
+  src: local('Open Sans Condensed Light'), local('OpenSansCondensed-Light'), url(z7NFdQDnbTkabZAIOl9il_O6KJj73e7Ff1GhDuXMRw.woff2), url(https://fonts.gstatic.com/s/opensanscondensed/v12/z7NFdQDnbTkabZAIOl9il_O6KJj73e7Ff1GhDuXMRw.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root{
+	--gap: 24px;
+}
+
+/* it only shows up on preferences screen, and this only works on chrome, so reconsider */
+::-webkit-scrollbar {
+	display: none;
+}
+
+body {
+	margin: 0;
+	overflow: hidden;
+	background: darkgreen;
+	user-select: none;
+/* This may LOOK good, but it has a serious impact on both load time and animation smoothness. Stop doing it!
+	background: darkgreen url(https://picsum.photos/g/1366/768/?random&blur) center;
+	background-size: cover;
+*/
+}
+
+.container {
+	display: grid;
+	grid-template-columns: auto auto auto;
+	grid-gap: var(--gap);
+	height: 100%;
+	justify-content: center;
+	align-content: center;
+}
+
+.item {
+	display: flex;
+	/*transition: 195ms;*/
+}
+
+.preferences {
+	display: none;
+	position: fixed;
+	padding-top: 50px;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	overflow: auto;
+}
+
+h2 {
+	font-family: "Amatic SC", sans-serif;
+}
+
+.preferences-content {
+	border-radius: 15px;
+	background-color: #fefefe;
+	margin: auto;
+	padding: 20px;
+	width: 80%;
+	font-family: "Open Sans Condensed", sans-serif;
+	font-weight: 300;
+}
+
+.close {
+	color: #aaaaaa;
+	float: right;
+	font-size: 28px;
+	font-weight: bold;
+}
+
+.close:hover, .close:focus {
+	color: #000;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+svg {
+	transform: scale(1);
+	width: 100%;
+	height: 100%;
+}
+
+svg .bg {
+	fill: #fefefe;
+	rx: 15;
+	ry: 15;
+	stroke: grey;
+	stroke-width: 0.55%;
+	width: 300;
+	height: 200;
+}
+
+svg.selected .bg {
+	fill: #FFFF99;
+}
+
+svg.selected {
+	transform: scale(1.04);
+	z-index: 2;
+	transition-duration: 40ms;
+}
+
+.tremble {
+	animation: tremble 0.3s; 
+	animation-iteration-count: infinite;
+}
+
+@keyframes tremble {
+	0%   { transform: translate( 1px,  1px) rotate( 0deg); }
+	10%  { transform: translate(-1px, -2px) rotate(-1deg); }
+	20%  { transform: translate(-3px,  0px) rotate( 1deg); }
+	30%  { transform: translate( 3px,  2px) rotate( 0deg); }
+	40%  { transform: translate( 1px, -1px) rotate( 1deg); }
+	50%  { transform: translate(-1px,  2px) rotate(-1deg); }
+	60%  { transform: translate(-3px,  1px) rotate( 0deg); }
+	70%  { transform: translate( 3px,  1px) rotate(-1deg); }
+	80%  { transform: translate(-1px, -1px) rotate( 1deg); }
+	90%  { transform: translate( 1px,  2px) rotate( 0deg); }
+	100% { transform: translate( 1px, -2px) rotate(-1deg); }
+}
+
+.fall {
+	animation: fall 0.4s forwards;
+	animation-iteration-count: 1;
+}
+
+@keyframes fall {
+	0% { transform: translateY(0px); }
+	100% { transform: translateY(2000px); }
+}
+
+.enter {
+	animation: enter 250ms forwards;
+	animation-iteration-count: 1;
+	animation-timing-function: linear;
+}
+
+@keyframes enter{
+	0%   { opacity: 0;   transform: scale(0.3) translate3d(0,0,0); }
+	50%  { opacity: 0.9; transform: scale(1.1); }
+	80%  { opacity: 1;   transform: scale(0.89); }
+	100% { opacity: 1;   transform: scale(1)   translate3d(0,0,0); }
+}
+
+.exit {
+	animation: exit 120ms forwards;
+	animation-iteration-count: 1;
+	animation-timing-function: cubic-bezier( 0.55, 0.055, 0.675, 0.190 );
+}
+
+@keyframes exit {
+	0% { transform: translate(0); }
+	50% { opacity: 1 }
+	100% { opacity: 0; transform: translate(400%,400%) rotate(110deg);}
+}
+
+.hint {
+	z-index: 3;
+	animation-name: pulse;
+	animation-duration: 800ms;
+	animation-iteration-count: infinite;
+	animation-timing-function: ease-in-out;
+}
+
+@keyframes pulse {
+	0% { transform: scale3d(1,1,1); }
+	50% { transform: scale3d(1.05,1.05,1.05); }
+	100% { transform:  scale3d(1,1,1); }
+}
+
+@keyframes spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(180deg); }
+}
+
+@keyframes swing {
+	20% { transform: rotate3d(0, 0, 1, 15deg); } 
+	40% { transform: rotate3d(0, 0, 1, -10deg); } 
+	60% { transform: rotate3d(0, 0, 1, 5deg); } 
+	80% { transform: rotate3d(0, 0, 1, -5deg); } 
+	100% { transform: rotate3d(0, 0, 1, 0deg); }
+}
+
+.swing {
+	transform-origin: top center;
+	animation-name: swing;
+	animation-duration: 1000ms;
+	animation-iteration-count: 1;
+	animation-timing-function: ease-in-out;
+}
+
+@keyframes tada {
+	0% { transform: scale3d(1, 1, 1); } 
+	10%, 20% { transform: scale3d(0.9, 0.9, 0.9) rotate3d(0, 0, 1, -3deg); } 
+	30%, 50%, 70%, 90% { transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, 3deg); } 
+	40%, 60%, 80% { transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, -3deg); } 
+	100% { transform: scale3d(1, 1, 1); }
+}
+
+.tada {
+	animation-name: tada;
+	animation-duration: 1000ms;
+	animation-iteration-count: 1;
+}
