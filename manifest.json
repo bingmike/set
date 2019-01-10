@@ -28,7 +28,7 @@
       "type": "image/png"
 }],
   "start_url": "index.htm",
-  "display": "fullscreen",
+  "display": "standalone",
   "background_color": "#006000",
   "theme_color": "#006000"
 }
