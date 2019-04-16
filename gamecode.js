@@ -403,7 +403,7 @@ function collapseHand(){
 	const items = container.querySelectorAll(".item"); // if we filter for empty, we won't know if it was big
 	let big = items.length > 12;
 	items.forEach( item => ( item.innerHTML == "" ) && item.parentNode.removeChild(item));
-	if( big ) sizeDivs();
+	sizeDivs();
 }
 
 function removeSet() {
