@@ -553,6 +553,7 @@ function identifySet( arr ) {
 }
 
 function process_time( newtime ) {
+	if( newtime >= 180000 ) return;
 	if( prefs.debug ) console.log(`process_time(${newtime})`);
 	if( prefs.juniordeck ) {
 		if( newtime < stats.bestTimeJr ) stats.bestTimeJr = newtime;
