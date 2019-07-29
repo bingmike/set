@@ -6,9 +6,6 @@ TODO:
 SLICKEN: Options controls can and must be completely customized. Stock HTML form elements are ugly and do not promote trust
 The range slider is bothering me in particular.
 
-SLICKEN: Stats could be nicer, more extensive, think phpinfo(). Last 3 average. Last 5 average. Last set found. Last set time.
-Best time 3,5,etc should probably display best averavge time.
-
 SLICKEN: Cards should have a 3D appearance for some animations. Exploit those 3D css transforms.
 entrance animation could have a little more jiggle
 beautify animations
@@ -22,6 +19,8 @@ Or it could breifly turn gold when you log a new best time. OR something.
 
 PREFS BUTTON BUGLY BUG: If you bring up prefs by clicking right where the close button X appears, the same touch event
 will immediately close prefs. This almost doesn't matter at all to me.
+IDEA: the prefs dialog could only add the event listener after prefs has been open for a second or so
+Or only start paying attention to the event listener after a second has passed.
 
 Background could be a canvas element with all kinds of possibilities. Just something to ponder.
 
@@ -78,6 +77,7 @@ let prefs = JSON.parse(localStorage.getItem('prefs')) || {
 	juniordeck: false, /* Changing this must trigger a new game */
 	infinity: true,  /* Changing this must trigger a new game */
 	hints: false,
+    displayNumSetsAvailable: false,
 	hintdelay: 30
 };
 
@@ -152,11 +152,6 @@ function clearHintAnim(e) {
 function clearHint() {
 	const hinted = container.querySelector(".hint");
 	if(hinted)hinted.classList.remove("hint");
-/*
-	if( hinted ) { // This is where I used one-time event listeners for the very first time. Also the animationiteration event! I learned about it at css-tricks.com.
-		hinted.addEventListener( "animationiteration", clearHintAnim, { once: true } );
-	}
-*/
 }
 
 function addRow(){
@@ -481,6 +476,23 @@ function get3cards(){
 	});
 }
 
+function displayNumSetsAvailable() {
+    if( prefs.displayNumSetsAvailable ) {
+        // delete any existing display and generate a new one
+        let dispNSA = document.getElementById("numSetsAvailable");
+        if( dispNSA ) dispNSA.parentNode.removeChild( dispNSA );
+
+        dispNSA = document.createElement("div");
+        dispNSA.setAttribute( "id", "numSetsAvailable" );
+        dispNSA.innerHTML = setsAvailable();
+        container.appendChild( dispNSA );
+    }
+    else {
+        let dispNSA = document.getElementById("numSetsAvailable");
+        if( dispNSA ) dispNSA.parentNode.removeChild( dispNSA );
+    }
+}
+
 function logic(){
 	if( deck.length > 0 ) {
 		if( hand.length >= 12 ) {
@@ -489,6 +501,8 @@ function logic(){
 				get3cards();
 				logic();
 			}
+            // else display num sets available if appropriate
+            else displayNumSetsAvailable();
 		} else {
 			get3cards();
 			logic();
@@ -498,7 +512,11 @@ function logic(){
 		if( ! setsAvailable() ) {
 			gameOver();
 		}
-		else collapseHand(); // only when we keep going
+		else {
+            collapseHand(); // only when we keep going
+            // display num sets available if appropriate
+            displayNumSetsAvailable();
+        }
 	}	
 }
 
@@ -576,14 +594,6 @@ function process_time( newtime ) {
 	localStorage.setItem('stats', JSON.stringify(stats));
 }
 
-function openingDeal(){
-	hand = [];
-	for( let i = 0; i < 12; i++ ){
-		hand.push( deck.pop() );
-		generateCard( hand[ hand.length - 1 ]);
-	}
-}
-
 function initialize(){
 	gameOverLoop = null;
 
@@ -597,7 +607,6 @@ function initialize(){
 	addRow(); addRow(); addRow(); addRow();
 	sizeDivs();
 	resetDeck();
-	//openingDeal();
 	logic();
 	startTime = Date.now();
 	resetHintTimer();
@@ -656,6 +665,7 @@ function toggleOptions( e ) {
 		options.forEach( option => {
 			prefs[option.dataset.key] = option.checked;
 		});
+        displayNumSetsAvailable();
 		prefs.hintdelay = hintdelay.value;
 		localStorage.setItem('prefs', JSON.stringify(prefs));
 		resetHintTimer();
