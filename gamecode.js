@@ -75,7 +75,6 @@ let stats = JSON.parse(localStorage.getItem('stats')) || {
 };
 
 let prefs = JSON.parse(localStorage.getItem('prefs')) || {
-	debug: true,
 	juniordeck: false, /* Changing this must trigger a new game */
 	infinity: true,  /* Changing this must trigger a new game */
 	hints: false,
@@ -123,7 +122,7 @@ window.addEventListener( "touchstart", winclick );
 window.addEventListener('contextmenu', e => e.preventDefault());
 
 closeButton.addEventListener( "click", toggleOptions );
-nukeButton.addEventListener( "click", nukeButtonFunction );
+// nukeButton.addEventListener( "click", nukeButtonFunction );
 hintdelay.addEventListener( "mousemove", updateDisplayedRange );
 hintdelay.addEventListener( "touchmove", updateDisplayedRange );
 hintdelay.addEventListener( "click", updateDisplayedRange );
@@ -527,10 +526,6 @@ function setsAvailable() {
 	if( lastFound ) {
 		hintCandidate = document.getElementById( "svg" + lastFound[0] );
 	}
-	if( prefs.debug ) {
-		console.log( ( settotal / 3 ) + " set" + ((settotal!=3)?("s"):("")) + " available" );
-		if( lastFound )console.log( (identifySet( lastFound )).join(", ") );
-	}
 	return settotal / 3;
 }
 
@@ -554,7 +549,6 @@ function identifySet( arr ) {
 
 function process_time( newtime ) {
 	if( newtime >= 180000 ) return;
-	if( prefs.debug ) console.log(`process_time(${newtime})`);
 	if( prefs.juniordeck ) {
 		if( newtime < stats.bestTimeJr ) stats.bestTimeJr = newtime;
 		stats.setsFoundJr++;
@@ -616,27 +610,41 @@ function stats2html() {
 	}
 
 	const statsspan = document.getElementById("statsspan");
+
 	let html = "Sets found: <b>" + numberWithCommas( stats.setsFound ) + "</b><br>";
+
 	html += "Junior Sets found: <b>" + numberWithCommas( stats.setsFoundJr ) + "</b><br>";
+
 	html += "Hints received: <b>" + stats.hints + "</b><br>";
+
 	html += "Best time: <b>" + n(stats.bestTime) + "</b><br>";
+
 	if( stats.times.length )
 	html += "Last time: <b>" + n(stats.times[stats.times.length-1]) + "</b><br>";
+
 	if( stats.times.length > 2 )
 	html += "Last 3 average: <b>" +  n( ( stats.times[stats.times.length-3] + stats.times[stats.times.length-2] + stats.times[stats.times.length-1] )  / 3) + "</b><br>";
-	html += "Best time, Junior: <b>" + n(stats.bestTimeJr) + "</b><br>";
+
+    html += "Best time, Junior: <b>" + n(stats.bestTimeJr) + "</b><br>";
+
 	if( stats.times.length > 2 )
 	html += "Best time, 3 set avg: <b>" + n(stats.best3/3) + "</b><br>";
+
 	if( stats.times.length > 4 )
 	html += "Best time, 5 set avg: <b>" + n(stats.best5/5) + "</b><br>";
+
 	if( stats.times.length > 9 )
 	html += "Best time, 10 set avg: <b>" + n(stats.best10/10) + "</b><br>";
+
 	if( stats.times.length > 26 )
 	html += "Best time, 27 set avg: <b>" + n(stats.best27/27) + "</b><br>";
+
 	if( stats.times.length > 99 )
 	html += "Best time, 100 set avg: <b>" + n(stats.best100/100) + "</b><br>";
+
 	if( stats.times )
 	html += "Time logged: <b>" + beautifyMS(stats.timeElapsed ) + "</b><br>"; 
+
 	statsspan.innerHTML = html;
 }
 
