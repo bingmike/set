@@ -441,10 +441,15 @@ function testSelection(){
 }
 
 function gameOver(){
+
+    let dispNSA = document.getElementById("numSetsAvailable");
+    if( dispNSA ) dispNSA.innerHTML = "0";
+
 	if( hand.length == 0 ) {
 		setTimeout( initialize, 800 );
 		return;
 	}
+
 	gameOverLoop = setInterval(function(){
 		let items = Array.from( container.querySelectorAll(".item") );
 		let untrembling = items.filter( item => ! item.classList.contains("tremble"));
