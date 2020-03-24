@@ -1,51 +1,7 @@
 /***************************************************************************************************
 This is a crack at implementing Set in web app form.
-
-TODO:
-
-SLICKEN: Options controls can and must be completely customized. Stock HTML form elements are ugly and do not promote trust
-The range slider is bothering me in particular.
-
-SLICKEN: Cards should have a 3D appearance for some animations. Exploit those 3D css transforms.
-entrance animation could have a little more jiggle
-beautify animations
-MAKE THE HINT A 3D rotation on the x axis or Y axis.
-Also, you should use a generic card back and get rid of the proprietary art
-
-Process_time *could* return something if the time it logged was a particularly good one. Or the function
-itself could provide some sort of [decor? bling?] when the player has a good time acheivement.
-Background could change color based on how your average time is trending
-Or it could breifly turn gold when you log a new best time. OR something.
-
-PREFS BUTTON BUGLY BUG: If you bring up prefs by clicking right where the close button X appears, the same touch event
-will immediately close prefs. This almost doesn't matter at all to me.
-IDEA: the prefs dialog could only add the event listener after prefs has been open for a second or so
-Or only start paying attention to the event listener after a second has passed.
-
-Background could be a canvas element with all kinds of possibilities. Just something to ponder.
-
-What if anything else can a service-worker do? Just something to ponder.
-
-You could use your beautiful graphics and animations to put together a tutorial for how to play Set.
-
-If you click on a hinted element, the hint class is immediately removed, even if it's in mid-animation.
-It would be better if an animated element waited until the animation was complete before it was removed.
-If we were handling the animation in JS, we could do this. The New Dream. Previous dreams include SVG and stats.best3
-Aha! There is an animationiteration event. If a hinted element needs to be unhinted, it should be added to it's animationitertion event handler
-UPDATE: did that, but quickly felt I needed to shorten the hint animation loop (it was 5 seconds!) and now it still looks boring
-TODO STILL: better hint. rubber band? 3D flip! 3D flip! 3D flip!
-STILL TODO: The squiggle makes the nice-enough spin fugly. When you click a hinted card. It should grow immediately instead of
-wating for the end of the animation cycle. Or else LOSE THE GROW EFFECT ALTOGETHER.
-Changed hint to a pulse. Now waiting for iteration makes the trnsition look worse. Ugh. Need better hints. 1, 2, then a persistent 3.
-TODO: Progressive Hinting, with the third one on an infinite loop. For now: swing, tada, pulse. Wow that didn't work well at all.
-
-*Hint delay rangle slider should not be seen if hintsbox is unchecked. 
-A good interface doesn't offer elements that don't work. This may seem purely cosmetic, but this
-kind of detail separates rinky-dinky from real-deal.
-UPDATE: It doesn't, but there's no grace to it. No animation because no jQuery to make it easy.
-UPDATE: I addded a fade-in class and applied it. Pretty rinkydink.
-
-*1**************************************************************************************************/
+Mike Jordan <bingmike@gmail.com>
+***************************************************************************************************/
 
 let deck = [];
 let hand = [];
@@ -255,14 +211,17 @@ function generateCard(icode) {
 
 	function cardSlideHandler( e ) {
 		if( freezeInput ) return;
+		// get current location of finger/pointer
 		var curX = e.touches[0].clientX;
 		var curY = e.touches[0].clientY;
+		// check each svg (card)
 		var svgs = document.getElementsByTagName( "svg" );
 		for( var i = 0 ; i < svgs.length; i++ ) {
 			var y1 = svgs[i].getBoundingClientRect().top;
 			var y2 = svgs[i].getBoundingClientRect().bottom;
 			var x1 = svgs[i].getBoundingClientRect().left;
 			var x2 = svgs[i].getBoundingClientRect().right;
+			// if the pointer is within the card area, select the card
 			if( curX >= x1 && curX <= x2 && curY >= y1 && curY <= y2 ) {
 				var id = svgs[i].id.slice( -4 );
 				if( ! selected.includes( id ) ) {
@@ -308,6 +267,17 @@ necessary def nodes for creating SET cards
 	var background = document.createElementNS(svgns, "rect");
 	background.setAttribute("id","svg"+icode+"bg");
 	background.classList.add("bg");
+
+	// do these 7 lines fix svg on FF? YEP
+	
+	background.setAttribute('width', '100%');
+	background.setAttribute('height', '100%');
+	background.setAttribute('rx', '15');
+	background.setAttribute('ry', '15');
+	//background.setAttribute('fill', '#fff');
+	background.setAttribute('stroke', 'grey');
+	background.setAttribute('stroke-width', '0.75%');
+
 	svg.appendChild(background);
 
 	// TRANSLATE SHADING
@@ -734,7 +704,7 @@ function winclick( e ) {
 	if( container.style.display == "none" ) {
 		return;
 	}
-	const padding = 10;
+	const padding = 30;
 	const items = Array.from( container.querySelectorAll(".item") );
 	const left = items.reduce( (min,val) => {
 		if( val.offsetLeft < min ) min = val.offsetLeft;
