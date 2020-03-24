@@ -253,8 +253,30 @@ function generateCard(icode) {
 		e.preventDefault();
 	}
 
+	function cardSlideHandler( e ) {
+		if( freezeInput ) return;
+		var curX = e.touches[0].clientX;
+		var curY = e.touches[0].clientY;
+		var svgs = document.getElementsByTagName( "svg" );
+		for( var i = 0 ; i < svgs.length; i++ ) {
+			var y1 = svgs[i].getBoundingClientRect().top;
+			var y2 = svgs[i].getBoundingClientRect().bottom;
+			var x1 = svgs[i].getBoundingClientRect().left;
+			var x2 = svgs[i].getBoundingClientRect().right;
+			if( curX >= x1 && curX <= x2 && curY >= y1 && curY <= y2 ) {
+				var id = svgs[i].id.slice( -4 );
+				if( ! selected.includes( id ) ) {
+					selected.push(id);
+					svgs[i].classList.add("selected");
+					if( selected.length == 3 ) testSelection();
+				}
+			}
+		}
+	}
+
 	svg.addEventListener( "mousedown", cardClickHandler );
 	svg.addEventListener( "touchstart", cardTouchHandler );
+	svg.addEventListener( "touchmove", cardSlideHandler );
 	
 	var defs = document.createElementNS(svgns, "defs");
 	svg.appendChild(defs);
@@ -370,6 +392,10 @@ function toggleSelect( c ){
 	if( selected.includes( c ) ) {
 		selected.splice(selected.indexOf(c), 1);
 		el.classList.remove("selected");
+		// freeze input for 10ms
+		freezeInput = true;
+		setTimeout( function(){ freezeInput = false; }, 100 );
+		
 	}
 	else {
 		selected.push(c);
@@ -436,7 +462,8 @@ function testSelection(){
 		selected.forEach( i => document.getElementById("svg"+i).classList.remove("selected") );
 		showError();
 		selected = [];
-		freezeInput = false;
+		//freezeInput = false;
+		setTimeout( function(){ freezeInput = false; }, 300 );
 	}
 }
 
@@ -518,10 +545,10 @@ function logic(){
 			gameOver();
 		}
 		else {
-            collapseHand(); // only when we keep going
-            // display num sets available if appropriate
-            displayNumSetsAvailable();
-        }
+		    collapseHand(); // only when we keep going
+		    // display num sets available if appropriate
+		    displayNumSetsAvailable();
+		}
 	}	
 }
 
