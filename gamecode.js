@@ -166,7 +166,7 @@ function isSet( c1, c2, c3 ){
 }
 
 function shuffle(array) {
-	var m = array.length, t, i;
+	let m = array.length, t, i;
 	while (m) {
 		i = Math.floor(Math.random() * m--);
 		t = array[m];
@@ -178,13 +178,13 @@ function shuffle(array) {
 
 
 function generateCard(icode) {
-	var strokeWidth = null; // each fill style gets its own
-	var shading = null;
+	let strokeWidth = null; // each fill style gets its own
+	let shading = null;
 
 	// TRANSLATE COLOR
-	var color = COLORS[ icode[2] - 1 ];
+	let color = COLORS[ icode[2] - 1 ];
 
-	var svg = document.createElementNS(svgns, "svg");
+	let svg = document.createElementNS(svgns, "svg");
 	// svg.setAttribute('width', '100%');
 	// svg.setAttribute('height', '100%');
 	svg.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xlink", xlinkns);
@@ -212,18 +212,18 @@ function generateCard(icode) {
 	function cardSlideHandler( e ) {
 		if( freezeInput ) return;
 		// get current location of finger/pointer
-		var curX = e.touches[0].clientX;
-		var curY = e.touches[0].clientY;
+		let curX = e.touches[0].clientX;
+		let curY = e.touches[0].clientY;
 		// check each svg (card)
-		var svgs = document.getElementsByTagName( "svg" );
-		for( var i = 0 ; i < svgs.length; i++ ) {
-			var y1 = svgs[i].getBoundingClientRect().top;
-			var y2 = svgs[i].getBoundingClientRect().bottom;
-			var x1 = svgs[i].getBoundingClientRect().left;
-			var x2 = svgs[i].getBoundingClientRect().right;
+		let svgs = document.getElementsByTagName( "svg" );
+		for( let i = 0 ; i < svgs.length; i++ ) {
+			let y1 = svgs[i].getBoundingClientRect().top;
+			let y2 = svgs[i].getBoundingClientRect().bottom;
+			let x1 = svgs[i].getBoundingClientRect().left;
+			let x2 = svgs[i].getBoundingClientRect().right;
 			// if the pointer is within the card area, select the card
 			if( curX >= x1 && curX <= x2 && curY >= y1 && curY <= y2 ) {
-				var id = svgs[i].id.slice( -4 );
+				let id = svgs[i].id.slice( -4 );
 				if( ! selected.includes( id ) ) {
 					selected.push(id);
 					svgs[i].classList.add("selected");
@@ -237,7 +237,7 @@ function generateCard(icode) {
 	svg.addEventListener( "touchstart", cardTouchHandler );
 	svg.addEventListener( "touchmove", cardSlideHandler );
 	
-	var defs = document.createElementNS(svgns, "defs");
+	let defs = document.createElementNS(svgns, "defs");
 	svg.appendChild(defs);
 
 /* If you attached a radial gradient to every svg, it would be available to highlight bgs when selected. You could animate it. It would be better to have one master svg hidden that contains all 
@@ -264,7 +264,7 @@ necessary def nodes for creating SET cards
 
 	
 	// DRAW CARD BACKGROUND
-	var background = document.createElementNS(svgns, "rect");
+	let background = document.createElementNS(svgns, "rect");
 	background.setAttribute("id","svg"+icode+"bg");
 	background.classList.add("bg");
 
@@ -281,7 +281,7 @@ necessary def nodes for creating SET cards
 	svg.appendChild(background);
 
 	// TRANSLATE SHADING
-	var s = icode[1];
+	let s = icode[1];
 	if( s == "1" ) {
 		shading = "none";
 		strokeWidth = 4.7;
@@ -291,12 +291,12 @@ necessary def nodes for creating SET cards
 		strokeWidth = 0;
 	}
 	else {
-		var pattern = document.createElementNS(svgns, "pattern");
+		let pattern = document.createElementNS(svgns, "pattern");
 		pattern.setAttribute("id","stripes" + uniqueId );
 		pattern.setAttribute("width",stripeWidth);
 		pattern.setAttribute("height",stripeWidth*2.0);
 		pattern.setAttribute("patternUnits","userSpaceOnUse");
-		var rect = document.createElementNS(svgns, "rect");
+		let rect = document.createElementNS(svgns, "rect");
 		rect.setAttribute("width",stripeWidth);
 		rect.setAttribute("height",stripeWidth);
 		rect.setAttribute("fill",color);
@@ -307,10 +307,10 @@ necessary def nodes for creating SET cards
 	}
 
 	// TRANSLATE SHAPE
-	var s2 = icode[3];
-	var path = null;
-	var offset = null;
-	var pathid = null;
+	let s2 = icode[3];
+	let path = null;
+	let offset = null;
+	let pathid = null;
 	if( s2 == "1" ) { // Diamonds
 		path = DIAMOND;
 		offset = 88;
@@ -326,7 +326,7 @@ necessary def nodes for creating SET cards
 		offset = 74;
 		pathid = "squiggle";
 	}
-	var poly = document.createElementNS(svgns, "path");
+	let poly = document.createElementNS(svgns, "path");
 	poly.setAttribute("id", pathid + uniqueId );
 	poly.setAttribute("stroke-linecap", "round" );
 	poly.setAttribute("stroke-width", strokeWidth );
@@ -336,16 +336,16 @@ necessary def nodes for creating SET cards
 	defs.appendChild(poly);
 
 	// DRAW THE SHAPE(S)
-	var num = parseInt( icode[0] );
+	let num = parseInt( icode[0] );
 	if( num == 1 || num == 3 ) {
-		var use = document.createElementNS(svgns, "use");
+		let use = document.createElementNS(svgns, "use");
 		use.setAttributeNS(xlinkns, "xlink:href", "#" + pathid + uniqueId );
 		svg.appendChild(use);
 	}
 	if(num > 1 ) {
 		if( num == 2 ) offset /= 2.0;
-		for( var i = -1; i <= 1; i += 2 ) {
-			var use1 = document.createElementNS(svgns, "use");
+		for( let i = -1; i <= 1; i += 2 ) {
+			let use1 = document.createElementNS(svgns, "use");
 			use1.setAttributeNS(xlinkns, "xlink:href", "#" + pathid + uniqueId );
 			use1.setAttribute("x",i*offset);
 			svg.appendChild(use1);
@@ -755,7 +755,7 @@ function updateDisplayedRange(e) {
 
 function beautifyMS( milliseconds ) {
 	let ret = "";
-	var day, hour, minute, seconds, milis;
+	let day, hour, minute, seconds, milis;
 	seconds = Math.floor(milliseconds / 1000);
 	minute = Math.floor(seconds / 60);
 	seconds = seconds % 60;
