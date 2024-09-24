@@ -1,53 +1,52 @@
 <html lang="en">
-	<head>
-		<title>Set</title>
-		<link rel="manifest" href="manifest.json">
-		<link rel="shortcut icon" type="image/png" href="favicon.png">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-		<meta name="theme-color" content="#006000">
-		<meta name="Description" content="How to play: click or touch cards to select. Select three cards that form a Set.">
-		<link rel="stylesheet" type="text/css" href="style.css">
-	</head>
-	<body>
-	<noscript>This game relies on EC6 JavaScript</noscript>
-	<div class="container"></div>
-	<div class="preferences">
-		<div class="preferences-content">
-			<span class="close">&times;</span>
+    <head>
+        <title>Set</title>
+        <link rel="manifest" href="manifest.json">
+        <link rel="shortcut icon" type="image/png" href="favicon.png">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <meta name="theme-color" content="#006000">
+        <meta name="Description" content="How to play: click or touch cards to select. Select three cards that form a Set.">
+        <link rel="stylesheet" type="text/css" href="style.css">
+    </head>
+    <body>
+    <noscript>This game relies on EC6 JavaScript</noscript>
+    <div class="container"></div>
+    <div class="preferences">
+        <div class="preferences-content">
+            <span class="close">&times;</span>
 
-			<h2>PREFERENCES</h2>
-				<input type="checkbox" class="option" data-key="juniordeck" id="juniordeck">
-				<label for="juniordeck">Junior deck: solid cards only</label><br>
-				<input type="checkbox" class="option" data-key="infinity" id="infinity">
-				<label for="infinity">Infinite: constant reshuffle</label><br>
+            <h2>PREFERENCES</h2>
+                <input type="checkbox" class="option" data-key="juniordeck" id="juniordeck">
+                <label for="juniordeck">Junior deck: solid cards only</label><br>
+                <input type="checkbox" class="option" data-key="infinity" id="infinity">
+                <label for="infinity">Infinite: constant reshuffle</label><br>
                 <input type="checkbox" class="option" data-key="displayNumSetsAvailable" id="displayNumSetsAvailable">
                 <label for="displayNumSetsAvailable">Display the number of available sets</label><br>
-				<!-- BR>&nbsp;&nbsp;&nbsp;&nbsp;(Changing JUNIOR or INFINITE will start a new game)<br><BR //-->
-				<input type="checkbox" class="option" data-key="hints" id="hints">
-				<label for="hints">Hints: but only one per set</label><br>
-				<span id="delaywrapper" class="fade-in">
-				<input type="range" min=10 max=60 step=5 class="range" data-key="hintdelay" id="hintdelay"><br>
-				<label for="hintdelay">Hint after <span id="delayval"></span> seconds</label><br><br></span>
-<!--
-				<input type="checkbox" class="option" data-key="debug" id="debug">
-				<label for="debug">DEBUG a little help when I get stuck</label><br>
-//-->
-				<hr>
-			<h2>STATISTICS</h2>
-				<span id="statsspan">Yo, statisticals go here!</span>
-				<!-- <br><button id="nukestats">Reset Stats</button> //-->
-				<hr>
-			<h2>ABOUT</h2>
-				Set was created by Marsha Falco in 1974, and is the best card game ever.<br><br>
-				I lost my deck in 2018, and made this to fill the gap.<br><br>
+                <!-- BR>&nbsp;&nbsp;&nbsp;&nbsp;(Changing JUNIOR or INFINITE will start a new game)<br><BR //-->
+                <input type="checkbox" class="option" data-key="hints" id="hints">
+                <label for="hints">Hints: but only one per set</label><br>
+                <span id="delaywrapper" class="fade-in">
+                <input type="range" min=10 max=60 step=5 class="range" data-key="hintdelay" id="hintdelay"><br>
+                <label for="hintdelay">Hint after <span id="delayval"></span> seconds</label><br><br></span>
+                <hr>
 
-				<i>Extra special thanks to Victoria, Sarah, and Asa Jordan.</i>
-				<br><br>
-				Last updated
+            <h2>STATISTICS</h2>
+                <span id="statsspan">Yo, statisticals go here!</span>
+                <input type="file" style="display:none;" id="file">
+                <hr>
+
+            <h2>ABOUT</h2>
+                Set was created by Marsha Falco in 1974, and is the best card game ever.<br><br>
+                I lost my deck in 2018, and made this to fill the gap.<br><br>
+
+                <i>Extra special thanks to Victoria, Sarah, and Asa Jordan.</i>
+                <hr>
+                <small>Last updated
 Mon Sep 23 18:22:53 MST 2024
-				<br><br><br><br><!-- MJ: these are absolutely necessary 😚️//-->
-		</div> 
-	</div>
-	</body>
+                </small>
+                <br><br><br><br><!-- MJ: these are absolutely necessary 😚️//-->
+        </div> 
+    </div>
+    </body>
 <script src="gamecode.js"></script>
 </html>
