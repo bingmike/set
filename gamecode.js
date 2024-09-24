@@ -77,6 +77,20 @@ window.addEventListener( "mousedown", winclick );
 window.addEventListener( "touchstart", winclick );
 window.addEventListener('contextmenu', e => e.preventDefault());
 
+window.addEventListener( "keydown", e => {
+    console.log( e.keyCode );
+    switch( e.keyCode ) {
+        case 70:
+            // toggle fullscreen
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        default:
+    }
+});
+
 closeButton.addEventListener( "click", toggleOptions );
 // nukeButton.addEventListener( "click", nukeButtonFunction );
 hintdelay.addEventListener( "mousemove", updateDisplayedRange );
