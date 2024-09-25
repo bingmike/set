@@ -115,7 +115,7 @@ window.addEventListener( "keydown", e => {
             }
             break;
         case 73: // i - Import stats from a json file
-            document.getElementById("file").click();
+            document.getElementById("fileinput").click();
             // and do nothing with it!
             break;
         case 111: // there are two slashes if there's a numpad
