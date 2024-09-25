@@ -1,17 +1,17 @@
 const cacheName = 'setcache';
 const filesToCache = [
-	'/index.htm',
-	'/favicon.png',
-	'/style.css',
-	'/gamecode.js',
-	'/TUZyzwprpvBS1izr_vOECuSf.woff2',
-	'/z7NFdQDnbTkabZAIOl9il_O6KJj73e7Ff1GhDuXMRw.woff2',
-    '/icon-128x128.png',
-    '/icon-144x144.png',
-    '/icon-152x152.png',
-    '/icon-192x192.png',
-    '/icon-256x256.png',
-    '/icon-512x512.png',
+	'/set/index.htm',
+	'/set/favicon.png',
+	'/set/style.css',
+	'/set/gamecode.js',
+	'/set/TUZyzwprpvBS1izr_vOECuSf.woff2',
+	'/set/z7NFdQDnbTkabZAIOl9il_O6KJj73e7Ff1GhDuXMRw.woff2',
+    '/set/icon-128x128.png',
+    '/set/icon-144x144.png',
+    '/set/icon-152x152.png',
+    '/set/icon-192x192.png',
+    '/set/icon-256x256.png',
+    '/set/icon-512x512.png',
 ];
 
 self.addEventListener('install', function(e) {
