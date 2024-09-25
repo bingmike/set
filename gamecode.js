@@ -47,9 +47,9 @@ const OVAL = `M114,55 C124.75,17.75 173,17.50
               184,55 184,55 184,143 184,143
               176.75,182 122,182 114,143 114,143
               114,55 114,55 Z`;
-const SQUIGGLE = `M 115,38 C 121.71,26.23 138.45,26.94 151,31 163.55,35.06 175.16,45.82 180,62 184.84,78.18 
-                  168.52,102.82 170,120 171.48,137.18 191.71,150.23 185,162 178.29,173.77 161.55,173.06 
-                  149,169 136.45,164.94 124.84,154.18 120,138 115.16,121.82 131.48,97.18 130,80 128.52,62.82 
+const SQUIGGLE = `M 115,38 C 121.71,26.23 138.45,26.94 151,31 163.55,35.06 175.16,45.82 180,62 184.84,78.18
+                  168.52,102.82 170,120 171.48,137.18 191.71,150.23 185,162 178.29,173.77 161.55,173.06
+                  149,169 136.45,164.94 124.84,154.18 120,138 115.16,121.82 131.48,97.18 130,80 128.52,62.82
                   108.29,49.77 115,38 115,38 115,38 115,38 Z`;
 
 const stripeWidth = 2.8;
@@ -89,7 +89,7 @@ function importStats( e ) {
     reader.readAsText( event.target.files[0] );
 }
 
-document.getElementById( 'file' ).addEventListener( 'change', importStats );
+document.getElementById( 'fileinput' ).addEventListener( 'change', importStats );
 
 window.addEventListener( "keydown", e => {
     switch( e.keyCode ) {
@@ -287,40 +287,17 @@ function generateCard(icode) {
     svg.addEventListener( "mousedown", cardClickHandler );
     svg.addEventListener( "touchstart", cardTouchHandler );
     svg.addEventListener( "touchmove", cardSlideHandler );
-    
+
     let defs = document.createElementNS(svgns, "defs");
     svg.appendChild(defs);
 
-/* If you attached a radial gradient to every svg, it would be available to highlight bgs when selected. You could animate it. It would be better to have one master svg hidden that contains all 
-necessary def nodes for creating SET cards
-
-    const rg = document.createElementNS( svgns, "radialGradient" );
-    rg.setAttribute("id","grad1");
-    defs.appendChild(rg);
-    const s1 = document.createElementNS( svgns, "stop" );
-    s1.setAttribute("offset","80%");
-    s1.setAttribute("style","stop-color:white;");
-    const stop2 = document.createElementNS( svgns, "stop" );
-    stop2.setAttribute("offset","100%");
-    stop2.setAttribute("style","stop-color:yellow;");
-    const s2anim = document.createElementNS( svgns, "animate" );
-    s2anim.setAttribute("attributeName","stop-color");
-    s2anim.setAttribute("values","yellow;orange;yellow;");
-    s2anim.setAttribute("dur","3s");
-    s2anim.setAttribute("repeatCount","indefinite");
-    stop2.appendChild( s2anim );
-    rg.appendChild( s1 );
-    rg.appendChild( stop2 );
------------------------------------------------------------------------------------------*/
-
-    
     // DRAW CARD BACKGROUND
     let background = document.createElementNS(svgns, "rect");
     background.setAttribute("id","svg"+icode+"bg");
     background.classList.add("bg");
 
     // do these 7 lines fix svg on FF? YEP
-    
+
     background.setAttribute('width', '100%');
     background.setAttribute('height', '100%');
     background.setAttribute('rx', '15');
@@ -416,7 +393,7 @@ function toggleSelect( c ){
         // freeze input for 10ms
         freezeInput = true;
         setTimeout( function(){ freezeInput = false; }, 100 );
-        
+
     }
     else {
         selected.push(c);
@@ -436,7 +413,7 @@ function showError() {
             const el = document.getElementById("svg"+i);
             if( el ) el.classList.remove("tremble");
         });
-    },300); 
+    },300);
     return;
 }
 
@@ -520,7 +497,7 @@ function gameOver(){
             setTimeout( initialize, 800 );
         }
     }, 70);
-} 
+}
 
 function get3cards(){
     [ 0, 1, 2 ].forEach( () => {
@@ -570,7 +547,7 @@ function logic(){
             // display num sets available if appropriate
             displayNumSetsAvailable();
         }
-    }   
+    }
 }
 
 function completeTheSet( c1, c2 ){
@@ -593,7 +570,7 @@ function setsAvailable() {
                 lastFound = [ hand[i], hand[j], c ];
             }
         }
-    }   
+    }
     if( lastFound ) {
         hintCandidate = document.getElementById( "svg" + lastFound[0] );
     }
@@ -705,7 +682,7 @@ function stats2html() {
     html += "Best time, 100 set avg: <b>" + n(stats.best100/100) + "</b><br>";
 
     if( stats.times )
-    html += "Time logged: <b>" + beautifyMS(stats.timeElapsed ) + "</b><br>"; 
+    html += "Time logged: <b>" + beautifyMS(stats.timeElapsed ) + "</b><br>";
 
     statsspan.innerHTML = html;
 }
@@ -773,7 +750,7 @@ function winclick( e ) {
         if( ( e.touches[0].clientX >= left) && (e.touches[0].clientX <= right ) && (e.touches[0].clientY >= top) && ( e.touches[0].clientY <= bottom ) ) return;
     }
     else if( ( e.x >= left) && (e.x <= right ) && (e.y >= top) && ( e.y <= bottom ) ) return;
-    
+
     toggleOptions();
 }
 
