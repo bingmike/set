@@ -1,10 +1,10 @@
-var cacheName = 'setcache';
-var filesToCache = [
-	'index.htm',
-	'style.css',
-	'gamecode.js',
-	'TUZyzwprpvBS1izr_vOECuSf.woff2',
-	'z7NFdQDnbTkabZAIOl9il_O6KJj73e7Ff1GhDuXMRw.woff2'
+const cacheName = 'setcache';
+const filesToCache = [
+	'/index.htm',
+	'/style.css',
+	'/gamecode.js',
+	'/TUZyzwprpvBS1izr_vOECuSf.woff2',
+	'/z7NFdQDnbTkabZAIOl9il_O6KJj73e7Ff1GhDuXMRw.woff2'
 ];
 
 self.addEventListener('install', function(e) {
