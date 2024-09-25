@@ -67,6 +67,16 @@ const hintsbox = document.getElementById("hints");
 const options = preferences.querySelectorAll(".option");
 const delaywrapper = preferences.querySelector("#delaywrapper");
 
+Date.prototype.yyyymmdd = function() {
+  var mm = this.getMonth() + 1; // getMonth() is zero-based
+  var dd = this.getDate();
+
+  return [this.getFullYear(),
+          (mm>9 ? '' : '0') + mm,
+          (dd>9 ? '' : '0') + dd
+         ].join('');
+};
+
 hintsbox.addEventListener( "change", () => {
     delaywrapper.style.display = ((hintsbox.checked)?("block"):("none"));
 });
@@ -96,7 +106,8 @@ window.addEventListener( "keydown", e => {
         case 69: // e - Export stats to a json file
             let blob = new Blob([ JSON.stringify(stats) ], { type: "text/plain" } );
             let dlink = document.createElement("a");
-            dlink.download = "set-stats-date.json";
+            let dt = new Date();
+            dlink.download = `set-stats-${dt.yyyymmdd()}.json`;
             dlink.href = window.URL.createObjectURL( blob );
             dlink.onclick = function( e ) {
                 let that = this;
