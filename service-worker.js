@@ -1,7 +1,7 @@
 const cacheName = 'setcache';
 const filesToCache = [
 	'/index.htm',
-	'/favicon.ico',
+	'/favicon.png',
 	'/style.css',
 	'/gamecode.js',
 	'/TUZyzwprpvBS1izr_vOECuSf.woff2',
