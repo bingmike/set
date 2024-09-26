@@ -222,6 +222,7 @@ function isSet( c1, c2, c3 ){
         // I'd feel more clever if I could do this in an array reduce function
         if( ( c1[i] + c2[i] + c3[i] ) % 3 ) return 0;
     }
+
     // it is a set, and here is where we can know the degree of complexity of the set
     // A "Mensa" set has a levComp of 4 because all 4 attributes differ.
     let levComp = 0;
@@ -229,6 +230,13 @@ function isSet( c1, c2, c3 ){
         if( c1[i] != c2[i] ) levComp++;
     }
     // console.log( `Set complexity level: ${levComp}` );
+
+    // celebratory confetti, if levComp == 4 and a setting is activated
+    // confetti({
+    //   particleCount: 100,
+    //   spread: 70,
+    //   origin: { y: 0.6 },
+    // });
 
     return levComp;
 }
