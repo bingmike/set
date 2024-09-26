@@ -132,7 +132,7 @@ window.addEventListener( "keydown", e => {
             e.preventDefault();
             break;
         default:
-            console.log( e.keyCode );
+            // console.log( e.keyCode );
     }
 });
 
@@ -220,9 +220,17 @@ function isSet( c1, c2, c3 ){
     for( let i = 0; i < 4; i++ ) {
         // if the digit sum of every column is 3, 6, or 9, it's a set
         // I'd feel more clever if I could do this in an array reduce function
-        if( ( c1[i] + c2[i] + c3[i] ) % 3 ) return false;
+        if( ( c1[i] + c2[i] + c3[i] ) % 3 ) return 0;
     }
-    return true;
+    // it is a set, and here is where we can know the degree of complexity of the set
+    // A "Mensa" set has a levComp of 4 because all 4 attributes differ.
+    let levComp = 0;
+    for( let i = 0; i < 4; i++ ) {
+        if( c1[i] != c2[i] ) levComp++;
+    }
+    // console.log( `Set complexity level: ${levComp}` );
+
+    return levComp;
 }
 
 function shuffle(array) {
@@ -462,7 +470,9 @@ function removeSet() {
 
 function testSelection(){
     freezeInput = true;
-    if( isSet( ...selected ) ) {
+    let levComp = -1;
+    if( levComp = isSet( ...selected ) ) {
+        // console.log( `Set complexity level ${levComp}` )
         removeSet();
     }
     else {
@@ -624,7 +634,6 @@ function process_time( newtime ) {
             for( let i = 1; i <= B; i++ ){
                 sum += stats.times[ stats.times.length - i ];
             }
-            console.assert( sum != null, "Sum equals null here. We were prepared but were hoping it wouldn't." );
             if( sum != null && sum < stats["best" + B] ) {
                 stats["best" + B] = sum;
             }
