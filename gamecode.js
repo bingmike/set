@@ -90,7 +90,6 @@ window.addEventListener('contextmenu', e => e.preventDefault());
 function onReaderLoad( e ) {
     stats = JSON.parse( e.target.result );
     localStorage.setItem('stats', JSON.stringify(stats));
-    console.log( "IMPORTED!" );
 }
 
 function importStats( e ) {
@@ -127,7 +126,6 @@ window.addEventListener( "keydown", e => {
             break;
         case 73: // i - Import stats from a json file
             document.getElementById("fileinput").click();
-            // and do nothing with it!
             break;
         case 111: // there are two slashes if there's a numpad
         case 191: // slash / brings up search
